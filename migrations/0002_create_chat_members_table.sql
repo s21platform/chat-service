@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS chat_members (
 
 -- +goose Down
 DROP TABLE chat_members;
-DROP TABLE role_type;
+DROP TYPE role_type;
