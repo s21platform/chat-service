@@ -8,10 +8,9 @@ CREATE TABLE IF NOT EXISTS chats (
     type chat_type NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_message_id BIGINT,
-    owner_uuid UUID,
-    CONSTRAINT fk_chats_last_message FOREIGN KEY (last_message_id) REFERENCES messages(id) ON DELETE SET NULL,
-    CONSTRAINT fk_chats_owner_uuid FOREIGN KEY (owner_uuid) REFERENCES chat_members (user_uuid) ON DELETE SET NULL
+    owner_uuid UUID
 );
 
 -- +goose Down
 DROP TABLE chats;
+DROP TYPE chat_type;

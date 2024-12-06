@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMP DEFAULT NOW(),
     edited_at TIMESTAMP DEFAULT NULL(),
     deleted BOOLEAN DEFAULT FALSE,
-    CONSTRAINT fk_messages_chat_uuid FOREIGN KEY (chat_uuid) REFERENCES chats(uuid),
-    CONSTRAINT fk_messages_sender_uuid FOREIGN KEY (sender_uuid) REFERENCES chat_members(user_uuid)
+    CONSTRAINT fk_messages_chat_uuid FOREIGN KEY (chat_uuid) REFERENCES chats(uuid)
 );
 
 -- +goose Down
