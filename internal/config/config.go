@@ -17,7 +17,6 @@ type Config struct {
 
 type Service struct {
 	Port string `env:"CHAT_SERVICE_PORT"`
-	Host string `env:"CHAT_SERVICE_HOST"`
 }
 
 type Postgres struct {
