@@ -2,8 +2,6 @@ module chat-service
 
 go 1.22.8
 
-toolchain go1.23.4
-
 require (
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
