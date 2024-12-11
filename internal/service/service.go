@@ -1,4 +1,4 @@
-package rpc
+package service
 
 import (
 	"context"
@@ -10,10 +10,10 @@ import (
 
 type Server struct {
 	chat.UnimplementedChatServiceServer
-	dbR DbRepo
+	dbR DBRepo
 }
 
-func New(repo DbRepo) *Server {
+func New(repo DBRepo) *Server {
 	return &Server{
 		dbR: repo,
 	}
@@ -22,7 +22,7 @@ func New(repo DbRepo) *Server {
 func (s *Server) GetChat(ctx context.Context, in *chat.GetChatIn) (*chat.GetChatOut, error) {
 	data, err := s.dbR.GetChat(in.Uuid)
 	if err != nil {
-		return nil, fmt.Errorf("s.dbR.GetChat: %v", err)
+		return nil, fmt.Errorf("failed to fetch chat: %v", err)
 	}
 
 	out := &chat.GetChatOut{

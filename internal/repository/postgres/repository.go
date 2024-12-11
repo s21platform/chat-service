@@ -40,7 +40,7 @@ func (r *Repository) GetChat(chatUUID string) (*[]model.Message, error) {
 	`
 	err := r.connection.Select(&messages, query)
 	if err != nil {
-		return nil, fmt.Errorf("r.connection.Select in GetChat: %v", err)
+		return nil, fmt.Errorf("failed to get messages from db: %v", err)
 	}
 
 	return &messages, nil

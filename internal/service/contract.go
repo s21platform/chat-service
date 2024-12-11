@@ -1,7 +1,7 @@
-package rpc
+package service
 
 import "chat-service/internal/model"
 
-type DbRepo interface {
+type DBRepo interface {
 	GetChat(chatUUID string) (*[]model.Message, error)
 }
