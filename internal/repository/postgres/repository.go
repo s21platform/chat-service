@@ -21,8 +21,7 @@ func New(cfg *config.Config) *Repository {
 
 	db, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
-		//log.Fatalf("failed to connect DB")
-		log.Fatalf("Failed to connect to DB. Connection string: %s, Error: %v", conStr, err)
+		log.Fatalf("failed to connect to db: %v", err)
 	}
 
 	return &Repository{db}
