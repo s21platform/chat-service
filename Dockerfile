@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY --from=builder /usr/src/service/build/main /app
 RUN apk add --no-cache gcompat
-# RUN chmod +x main
+RUN chmod +x main
 
 # RUN ls -l /app/
 #COPY --from=builder /usr/src/service/scripts ./scripts

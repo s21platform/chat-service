@@ -2,7 +2,7 @@
 CREATE TYPE chat_type AS ENUM ('private', 'group');
 
 CREATE TABLE IF NOT EXISTS chats (
-    id INT SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     uuid UUID NOT NULL,
     group_name TEXT,
     type chat_type NOT NULL,

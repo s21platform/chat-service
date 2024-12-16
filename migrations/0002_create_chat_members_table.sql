@@ -2,7 +2,7 @@
 CREATE TYPE role_type AS ENUM ('member', 'admin');
 
 CREATE TABLE IF NOT EXISTS chat_members (
-    id INT SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     chat_id BIGINT NOT NULL,
     user_uuid UUID NOT NULL,
     role role_type NOT NULL,

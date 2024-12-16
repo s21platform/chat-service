@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS messages (
     sender_uuid UUID,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
-    edited_at TIMESTAMP DEFAULT NULL(),
+    edited_at TIMESTAMP DEFAULT NULL,
     deleted BOOLEAN DEFAULT FALSE,
     CONSTRAINT fk_messages_chat_uuid FOREIGN KEY (chat_uuid) REFERENCES chats(uuid)
 );

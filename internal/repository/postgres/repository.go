@@ -1,9 +1,9 @@
 package postgres
 
 import (
+	"fmt"
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
-	"fmt"
 	"log"
 
 	"github.com/jmoiron/sqlx"
@@ -13,16 +13,19 @@ type Repository struct {
 	connection *sqlx.DB
 }
 
-func New(cfg *config.Config) (*Repository, error) {
+func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
 
+	log.Println(conStr)
+
 	db, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
-		log.Fatalf("failed to connect DB")
+		//log.Fatalf("failed to connect DB")
+		log.Fatalf("Failed to connect to DB. Connection string: %s, Error: %v", conStr, err)
 	}
 
-	return &Repository{db}, nil
+	return &Repository{db}
 }
 
 func (r *Repository) Close() {

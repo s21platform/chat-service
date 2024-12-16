@@ -2,26 +2,22 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net"
-	"os"
-
 	"github.com/s21platform/chat-service/internal/config"
 	db "github.com/s21platform/chat-service/internal/repository/postgres"
 	"github.com/s21platform/chat-service/internal/service"
 	"google.golang.org/grpc"
+	"log"
+	"net"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
+
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func main() {
 	cfg := config.MustLoad()
 
-	dbRepo, err := db.New(cfg)
-	if err != nil {
-		log.Printf("failed connection to db: %v", err)
-		os.Exit(1)
-	}
+	dbRepo := db.New(cfg)
 
 	defer dbRepo.Close()
 
