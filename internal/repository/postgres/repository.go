@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"chat-service/internal/config"
-	"chat-service/internal/model"
 	"fmt"
+	"github.com/s21platform/chat-service/internal/config"
+	"github.com/s21platform/chat-service/internal/model"
 	"log"
 
 	"github.com/jmoiron/sqlx"
@@ -17,9 +17,11 @@ func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
 
+	log.Println(conStr)
+
 	db, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
-		log.Fatalf("failed to connect DB")
+		log.Fatalf("failed to connect to db: %v", err)
 	}
 
 	return &Repository{db}
