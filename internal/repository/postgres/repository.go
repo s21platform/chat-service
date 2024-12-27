@@ -2,9 +2,10 @@ package postgres
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -17,8 +18,6 @@ func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
 
-	log.Println(conStr)
-
 	db, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
 		log.Fatalf("failed to connect to db: %v", err)
@@ -28,7 +27,7 @@ func New(cfg *config.Config) *Repository {
 }
 
 func (r *Repository) Close() {
-	r.connection.Close()
+	_ = r.connection.Close()
 }
 
 func (r *Repository) GetChat(chatUUID string) (*[]model.Message, error) {
@@ -40,7 +39,7 @@ func (r *Repository) GetChat(chatUUID string) (*[]model.Message, error) {
 		ORDER BY created_at DESC
 		LIMIT 15; 
 	`
-	err := r.connection.Select(&messages, query)
+	err := r.connection.Select(&messages, query, chatUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages from db: %v", err)
 	}

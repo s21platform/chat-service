@@ -2,12 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+
+	"github.com/s21platform/chat-service/internal/infra"
+	logger_lib "github.com/s21platform/logger-lib"
+
 	"github.com/s21platform/chat-service/internal/config"
 	db "github.com/s21platform/chat-service/internal/repository/postgres"
 	"github.com/s21platform/chat-service/internal/service"
 	"google.golang.org/grpc"
-	"log"
-	"net"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 
@@ -16,22 +20,23 @@ import (
 
 func main() {
 	cfg := config.MustLoad()
+	logger := logger_lib.New(cfg.Logger.Host, cfg.Logger.Port, cfg.Service.Name, cfg.Platform.Env)
 
 	dbRepo := db.New(cfg)
-
 	defer dbRepo.Close()
 
-	server := service.New(dbRepo)
-	s := grpc.NewServer()
+	chatService := service.New(dbRepo)
+	server := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(infra.Logger(logger)),
+	)
 
-	chat.RegisterChatServiceServer(s, server)
+	chat.RegisterChatServiceServer(server, chatService)
 
-	log.Println("starting chat service on port", cfg.Service.Port)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
 		log.Fatalf("Cannot listen port: %s; Error: %v", cfg.Service.Port, err)
 	}
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Cannot start grpc: %s; Error: %v", cfg.Service.Port, err)
+	if err = server.Serve(lis); err != nil {
+		log.Fatalf("Cannot start grpc, port: %s; Error: %v", cfg.Service.Port, err)
 	}
 }
