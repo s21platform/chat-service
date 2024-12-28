@@ -39,8 +39,7 @@ type Logger struct {
 }
 
 type Platform struct {
-	Secret string `env:"SECRET_KEY"`
-	Env    string `env:"ENV"`
+	Env string `env:"ENV"`
 }
 
 func MustLoad() *Config {
