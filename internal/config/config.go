@@ -8,15 +8,21 @@ import (
 
 type key string
 
-const KeyUUID key = key("uuid")
+const (
+	KeyUUID   = key("uuid")
+	KeyLogger = key("logger")
+)
 
 type Config struct {
 	Service  Service
 	Postgres Postgres
+	Logger   Logger
+	Platform Platform
 }
 
 type Service struct {
 	Port string `env:"CHAT_SERVICE_PORT"`
+	Name string `env:"CHAT_SERVICE_NAME"`
 }
 
 type Postgres struct {
@@ -25,6 +31,15 @@ type Postgres struct {
 	Database string `env:"CHAT_SERVICE_POSTGRES_DB"`
 	Host     string `env:"CHAT_SERVICE_POSTGRES_HOST"`
 	Port     string `env:"CHAT_SERVICE_POSTGRES_PORT"`
+}
+
+type Logger struct {
+	Host string `env:"LOGGER_SERVICE_HOST"`
+	Port string `env:"LOGGER_SERVICE_PORT"`
+}
+
+type Platform struct {
+	Env string `env:"ENV"`
 }
 
 func MustLoad() *Config {

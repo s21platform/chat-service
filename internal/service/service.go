@@ -6,6 +6,8 @@ import (
 	"time"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
+	"github.com/s21platform/chat-service/internal/config"
+	logger_lib "github.com/s21platform/logger-lib"
 )
 
 type Server struct {
@@ -20,8 +22,12 @@ func New(repo DBRepo) *Server {
 }
 
 func (s *Server) GetChat(ctx context.Context, in *chat.GetChatIn) (*chat.GetChatOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("GetChat")
+
 	data, err := s.repository.GetChat(in.Uuid)
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to fetch chat: %v", err))
 		return nil, fmt.Errorf("failed to fetch chat: %v", err)
 	}
 
@@ -31,9 +37,9 @@ func (s *Server) GetChat(ctx context.Context, in *chat.GetChatIn) (*chat.GetChat
 
 	for i, message := range *data {
 		out.Messages[i] = &chat.Message{
-			Uuid: message.Uuid.String(),
+			Uuid:    message.Uuid.String(),
 			Content: message.Content,
-			SentAt: message.SentAt.Format(time.RFC3339),
+			SentAt:  message.SentAt.Format(time.RFC3339),
 		}
 	}
 
