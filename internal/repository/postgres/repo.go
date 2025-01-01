@@ -23,7 +23,9 @@ func New(cfg *config.Config) *Repository {
 		log.Fatal("error connect: ", err)
 	}
 
-	return &Repository{conn}
+	return &Repository{
+		connection: conn,
+	}
 }
 
 func (r *Repository) Close() {
