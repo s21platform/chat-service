@@ -6,16 +6,10 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type key string
-
-const (
-	KeyUUID   = key("uuid")
-	KeyLogger = key("logger")
-)
-
 type Config struct {
 	Service  Service
 	Postgres Postgres
+	Metrics  Metrics
 	Logger   Logger
 	Platform Platform
 }
@@ -33,6 +27,11 @@ type Postgres struct {
 	Port     string `env:"CHAT_SERVICE_POSTGRES_PORT"`
 }
 
+type Metrics struct {
+	Host string `env:"GRAFANA_HOST"`
+	Port int    `env:"GRAFANA_PORT"`
+}
+
 type Logger struct {
 	Host string `env:"LOGGER_SERVICE_HOST"`
 	Port string `env:"LOGGER_SERVICE_PORT"`
@@ -47,7 +46,7 @@ func MustLoad() *Config {
 	err := cleanenv.ReadEnv(cfg)
 
 	if err != nil {
-		log.Fatalf("Can not read env variables: %s", err)
+		log.Fatalf("failed to read env variables: %s", err)
 	}
 
 	return cfg
