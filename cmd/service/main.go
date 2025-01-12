@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/s21platform/chat-service/internal/infra"
@@ -34,9 +33,9 @@ func main() {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
-		log.Fatalf("Cannot listen port: %s; Error: %v", cfg.Service.Port, err)
+		logger.Error(fmt.Sprintf("Cannot listen port: %s; Error: %v", cfg.Service.Port, err))
 	}
 	if err = server.Serve(lis); err != nil {
-		log.Fatalf("Cannot start grpc, port: %s; Error: %v", cfg.Service.Port, err)
+		logger.Error(fmt.Sprintf("Cannot start grpc, port: %s; Error: %v", cfg.Service.Port, err))
 	}
 }
