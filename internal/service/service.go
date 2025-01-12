@@ -21,17 +21,17 @@ func New(repo DBRepo) *Server {
 	}
 }
 
-func (s *Server) GetChat(ctx context.Context, in *chat.GetChatIn) (*chat.GetChatOut, error) {
+func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessagesIn) (*chat.GetRecentMessagesOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("GetChat")
+	logger.AddFuncName("GetRecentMessages")
 
-	data, err := s.repository.GetChat(in.Uuid)
+	data, err := s.repository.GetRecentMessages(in.Uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to fetch chat: %v", err))
 		return nil, fmt.Errorf("failed to fetch chat: %v", err)
 	}
 
-	out := &chat.GetChatOut{
+	out := &chat.GetRecentMessagesOut{
 		Messages: make([]*chat.Message, len(*data)),
 	}
 

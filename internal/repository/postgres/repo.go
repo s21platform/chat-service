@@ -32,7 +32,7 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) GetChat(chatUUID string) (*[]model.Message, error) {
+func (r *Repository) GetRecentMessages(chatUUID string) (*[]model.Message, error) {
 	var messages []model.Message
 
 	query := `
