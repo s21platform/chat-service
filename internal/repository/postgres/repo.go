@@ -18,8 +18,6 @@ func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
 
-	fmt.Println(conStr)
-
 	conn, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
 		log.Fatal("error connect: ", err)

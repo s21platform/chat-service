@@ -20,7 +20,6 @@ import (
 
 func main() {
 	cfg := config.MustLoad()
-	fmt.Printf("Loaded Config: %+v\n", cfg)
 	logger := logger_lib.New(cfg.Logger.Host, cfg.Logger.Port, cfg.Service.Name, cfg.Platform.Env)
 
 	dbRepo := db.New(cfg)
