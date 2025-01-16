@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS messages
 (
     id          UUID PRIMARY KEY,
-    chat_uuid   UUID UNIQUE,
+    chat_uuid   UUID,
     sender_uuid UUID,
     content     TEXT NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
