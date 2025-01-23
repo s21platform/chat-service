@@ -33,8 +33,8 @@ type Metrics struct {
 }
 
 type Logger struct {
-	Host string `env:"LOGGER_SERVICE_HOST"`
 	Port string `env:"LOGGER_SERVICE_PORT"`
+	Host string `env:"LOGGER_SERVICE_HOST"`
 }
 
 type Platform struct {
