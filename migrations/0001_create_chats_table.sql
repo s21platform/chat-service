@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS chats
     uuid            UUID UNIQUE NOT NULL,
     group_name      TEXT,
     type            chat_type   NOT NULL,
+    avatar_link     TEXT,
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_message_id UUID,
     owner_uuid      UUID

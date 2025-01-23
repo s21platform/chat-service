@@ -15,3 +15,13 @@ type Message struct {
 type MessageData struct {
 	Messages []Message
 }
+
+type EditMessageRequest struct {
+	MessageUUID uuid.UUID `db:"id"`      // uuid сообщения
+	Content     string    `db:"content"` // новый текст сообщения
+}
+
+type EditedMessage struct {
+	MessageUUID uuid.UUID `db:"id"`      // uuid измененного сообщения
+	Content     string    `db:"content"` // новый текст сообщения
+}
