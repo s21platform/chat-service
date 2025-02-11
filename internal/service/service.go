@@ -57,7 +57,7 @@ func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat
 	}
 
 	out := &chat.EditMessageOut{
-		UuidMessage: data.MessageUUID.String(),
+		UuidMessage: data.MessageID.String(),
 		NewContent:  data.Content,
 	}
 
