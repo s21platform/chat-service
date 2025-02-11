@@ -48,3 +48,20 @@ func (r *Repository) GetRecentMessages(chatUUID string) (*[]model.Message, error
 
 	return &messages, nil
 }
+
+func (r *Repository) EditMessage(messageID string, newContent string) (*model.EditedMessage, error) {
+	var editedMessage model.EditedMessage
+
+	query := `
+		UPDATE messages 
+		SET content = $1, edited_at = CURRENT_TIMESTAMP
+		WHERE id = $2
+		RETURNING id, content;
+    `
+	err := r.connection.Get(&editedMessage, query, newContent, messageID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to edit message in db: %v", err)
+	}
+
+	return &editedMessage, nil
+}
