@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TYPE delete_for AS ENUM ('self', 'all');
+CREATE TYPE deletion_mode AS ENUM ('self', 'all');
 
 CREATE TABLE IF NOT EXISTS messages
 (
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS messages
     content     TEXT NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     edited_at   TIMESTAMP DEFAULT NULL,
-    deleted     delete_for   DEFAULT 'self',
+    delete_for     deletion_mode   DEFAULT 'self',
     CONSTRAINT fk_messages_chat_uuid FOREIGN KEY (chat_uuid) REFERENCES chats (uuid)
 );
 
