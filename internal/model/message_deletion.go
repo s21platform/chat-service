@@ -2,16 +2,14 @@ package model
 
 import "github.com/google/uuid"
 
-type DeletionScope int
-
 const (
-	Self DeletionScope = iota
-	All
+	Self string = "self"
+	All  string = "all"
 )
 
 type MessageToDelete struct {
-	MessageUUID uuid.UUID     `db:"id"` // UUID сообщения
-	Scope       DeletionScope //  Область удаления (SELF или ALL)
+	MessageID uuid.UUID `db:"id"` // UUID сообщения
+	Mode      string    //  Область удаления (Self или All)
 }
 
 type DeletionResult struct {

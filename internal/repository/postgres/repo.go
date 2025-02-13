@@ -17,7 +17,7 @@ type Repository struct {
 func New(cfg *config.Config) *Repository {
 	conStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
-
+	fmt.Println(conStr)
 	conn, err := sqlx.Connect("postgres", conStr)
 	if err != nil {
 		log.Fatal("error connect: ", err)
@@ -64,4 +64,21 @@ func (r *Repository) EditMessage(messageID string, newContent string) (*model.Ed
 	}
 
 	return &editedMessage, nil
+}
+
+func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
+	var updatedID string
+
+	query := `
+	UPDATE messages
+	SET deleted = $1
+	WHERE id = $2
+	RETURNING id;
+`
+	err := r.connection.Get(&updatedID, query, mode, messageID)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete message in db: %v", err)
+	}
+
+	return true, nil
 }

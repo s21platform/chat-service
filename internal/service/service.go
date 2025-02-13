@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/s21platform/chat-service/internal/model"
 	"time"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
@@ -44,4 +45,24 @@ func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessag
 	}
 
 	return out, nil
+}
+
+func (s *Server) DeleteMessage(ctx context.Context, in *chat.DeleteMessageIn) (*chat.DeleteMessageOut, error) {
+	fmt.Println(in.UuidMessage)
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("DeleteMessage")
+
+	if in.Mode != model.Self && in.Mode != model.All {
+		return nil, fmt.Errorf("invalid scope: %s", in.Mode)
+	}
+
+	success, err := s.repository.DeleteMessage(in.UuidMessage, in.Mode)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to delete message: %v", err))
+		return nil, fmt.Errorf("failed to delete message: %v", err)
+	}
+
+	return &chat.DeleteMessageOut{
+		DeletionStatus: success,
+	}, nil
 }

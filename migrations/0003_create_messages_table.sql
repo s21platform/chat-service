@@ -1,4 +1,6 @@
 -- +goose Up
+CREATE TYPE delete_for AS ENUM ('self', 'all');
+
 CREATE TABLE IF NOT EXISTS messages
 (
     id          UUID PRIMARY KEY,
@@ -7,9 +9,10 @@ CREATE TABLE IF NOT EXISTS messages
     content     TEXT NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     edited_at   TIMESTAMP DEFAULT NULL,
-    deleted     BOOLEAN   DEFAULT FALSE,
+    deleted     delete_for   DEFAULT 'self',
     CONSTRAINT fk_messages_chat_uuid FOREIGN KEY (chat_uuid) REFERENCES chats (uuid)
 );
 
 -- +goose Down
 DROP TABLE IF EXISTS messages;
+DROP TYPE IF EXISTS delete_for;

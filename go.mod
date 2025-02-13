@@ -7,7 +7,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
-	github.com/s21platform/chat-proto v0.0.2
+	github.com/s21platform/chat-proto v0.0.4
 	github.com/s21platform/logger-lib v0.0.3
 	google.golang.org/grpc v1.69.2
 )
