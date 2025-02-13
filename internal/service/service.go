@@ -47,6 +47,24 @@ func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessag
 	return out, nil
 }
 
+func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat.EditMessageOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("EditMessage")
+
+	data, err := s.repository.EditMessage(in.UuidMessage, in.NewContent)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to edit message: %v", err))
+		return nil, fmt.Errorf("failed to edit message: %v", err)
+	}
+
+	out := &chat.EditMessageOut{
+		UuidMessage: data.MessageID.String(),
+		NewContent:  data.Content,
+	}
+
+	return out, nil
+}
+
 func (s *Server) DeleteMessage(ctx context.Context, in *chat.DeleteMessageIn) (*chat.DeleteMessageOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("DeleteMessage")
