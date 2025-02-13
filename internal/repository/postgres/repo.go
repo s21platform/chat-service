@@ -65,3 +65,17 @@ func (r *Repository) EditMessage(messageID string, newContent string) (*model.Ed
 
 	return &editedMessage, nil
 }
+
+func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
+	query := `
+	UPDATE messages
+	SET deleted_for = $1
+	WHERE id = $2;
+`
+	_, err := r.connection.Exec(query, mode, messageID)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete message in db: %v", err)
+	}
+
+	return true, nil
+}

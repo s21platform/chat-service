@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/s21platform/chat-service/internal/model"
 	"time"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
@@ -46,20 +47,21 @@ func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessag
 	return out, nil
 }
 
-func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat.EditMessageOut, error) {
+func (s *Server) DeleteMessage(ctx context.Context, in *chat.DeleteMessageIn) (*chat.DeleteMessageOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("EditMessage")
+	logger.AddFuncName("DeleteMessage")
 
-	data, err := s.repository.EditMessage(in.UuidMessage, in.NewContent)
+	if in.Mode != model.Self && in.Mode != model.All {
+		return nil, fmt.Errorf("invalid mode: %s", in.Mode)
+	}
+
+	isDeleted, err := s.repository.DeleteMessage(in.UuidMessage, in.Mode)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to edit message: %v", err))
-		return nil, fmt.Errorf("failed to edit message: %v", err)
+		logger.Error(fmt.Sprintf("failed to delete message: %v", err))
+		return nil, fmt.Errorf("failed to delete message: %v", err)
 	}
 
-	out := &chat.EditMessageOut{
-		UuidMessage: data.MessageID.String(),
-		NewContent:  data.Content,
-	}
-
-	return out, nil
+	return &chat.DeleteMessageOut{
+		DeletionStatus: isDeleted,
+	}, nil
 }
