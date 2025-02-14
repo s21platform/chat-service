@@ -79,3 +79,40 @@ func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) 
 
 	return true, nil
 }
+
+func (r *Repository) CreateChat(initiatorID, companionID string) (string, error) {
+	var existingChatUUID string
+
+	query := `
+SELECT cm1.chat_id
+FROM chat_members cm1
+         JOIN chat_members cm2 ON cm1.chat_id = cm2.chat_id
+WHERE cm1.user_uuid = $1 AND cm2.user_uuid = $2;
+`
+	err := r.connection.Get(&existingChatUUID, query, initiatorID, companionID)
+	if err == nil && existingChatUUID != "" {
+		return existingChatUUID, nil
+	}
+
+	var chatID int
+	var chatUUID string
+	query = `
+	INSERT INTO chats (uuid, type, created_at)
+	VALUES (gen_random_uuid(), 'private', CURRENT_TIMESTAMP)
+	RETURNING id, uuid;
+`
+	err = r.connection.QueryRow(query).Scan(&chatID, &chatUUID)
+	if err != nil {
+		return "", fmt.Errorf("failed to create chat in db: %v", err)
+	}
+
+	query = `
+INSERT INTO chat_members (chat_id, user_uuid, role)
+VALUES ($1, $2, 'member'), ($1, $3, 'member');
+`
+	_, err = r.connection.Exec(query, chatID, initiatorID, companionID)
+	if err != nil {
+		return "", fmt.Errorf("failed to create chat in db: %v", err)
+	}
+	return chatUUID, nil
+}

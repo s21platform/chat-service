@@ -5,7 +5,9 @@ import (
 )
 
 type DBRepo interface {
+	CreateChat(initiatorID, companionID string) (string, error)
 	GetRecentMessages(chatUUID string) (*[]model.Message, error)
+
 	DeleteMessage(messageID string, mode string) (bool, error)
 	EditMessage(messageID string, newContent string) (*model.EditedMessage, error)
 }

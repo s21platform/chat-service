@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/s21platform/chat-service/internal/model"
+	"google.golang.org/grpc/metadata"
 	"time"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
@@ -20,6 +21,41 @@ func New(repo DBRepo) *Server {
 	return &Server{
 		repository: repo,
 	}
+}
+
+func (s *Server) CreateChat(ctx context.Context, in *chat.CreateChatIn) (*chat.CreateChatOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("CreateChat")
+
+	metadataCtx, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		logger.Error(fmt.Sprintf("user_uuid is missing in metadata"))
+		return nil, fmt.Errorf("user_uuid is missing in metadata")
+	}
+
+	userUUIDs, exists := metadataCtx["user_uuid"]
+	if !exists || len(userUUIDs) == 0 || userUUIDs[0] == "" {
+		logger.Error("user_uuid is missing in metadata")
+		return nil, fmt.Errorf("unauthorized: user_uuid is missing")
+	}
+
+	initiatorID := userUUIDs[0]
+	companionID := in.CompanionUuid
+	if len(companionID) == 0 || companionID == "" {
+		logger.Error(fmt.Sprintf("companion_uuid is empty"))
+		return nil, fmt.Errorf("companion_uuid is empty")
+	}
+
+	newChatUUID, err := s.repository.CreateChat(initiatorID, companionID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to create chat: %v", err))
+		return nil, fmt.Errorf("failed to create chat: %v", err)
+	}
+
+	out := &chat.CreateChatOut{
+		NewChatUuid: newChatUUID,
+	}
+	return out, nil
 }
 
 func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessagesIn) (*chat.GetRecentMessagesOut, error) {
