@@ -45,7 +45,8 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 		FROM chat_members cm
 			JOIN public.chats c on c.id = cm.chat_id
 			LEFT JOIN public.messages m ON c.last_message_id = m.id
-		WHERE cm.user_uuid = $1`
+		WHERE cm.user_uuid = $1
+		ORDER BY m.created_at DESC`
 	err := r.connection.Select(&chats, query, UUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chats from db: %v", err)
