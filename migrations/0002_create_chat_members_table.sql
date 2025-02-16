@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS chat_members
     id        SERIAL PRIMARY KEY,
     chat_id   INT       NOT NULL,
     user_uuid UUID      NOT NULL,
-    role      role_type NOT NULL,
+    role      role_type DEFAULT 'member',
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_chat_members_chats FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
 );
