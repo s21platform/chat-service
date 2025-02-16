@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	avatarLink = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
+	//TODO: убрать после добавления kafka-consumer-avatar
+	defaultAvatar = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
+	typePrivate   = "private"
 )
 
 type Repository struct {
@@ -34,6 +36,32 @@ func New(cfg *config.Config) *Repository {
 
 func (r *Repository) Close() {
 	_ = r.connection.Close()
+}
+
+func (r *Repository) CreateChat(initiatorID, companionID string) (string, error) {
+	var chatID int
+	var chatUUID string
+
+	query := `
+	INSERT INTO chats (uuid, type, avatar_link)
+	VALUES (gen_random_uuid(), $1, $2)
+	RETURNING id, uuid;
+`
+	err := r.connection.QueryRow(query, typePrivate, defaultAvatar).Scan(&chatID, &chatUUID)
+	if err != nil {
+		return "", fmt.Errorf("failed to create chat in db: %v", err)
+	}
+
+	query = `
+INSERT INTO chat_members (chat_id, user_uuid)
+VALUES ($1, $2), ($1, $3);
+`
+	_, err = r.connection.Exec(query, chatID, initiatorID, companionID)
+	if err != nil {
+		return "", fmt.Errorf("failed to create chat in db: %v", err)
+	}
+
+	return chatUUID, nil
 }
 
 func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
@@ -102,28 +130,4 @@ func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) 
 	}
 
 	return true, nil
-}
-
-func (r *Repository) CreateChat(initiatorID, companionID string) (string, error) {
-	var chatID int
-	var chatUUID string
-	query := `
-	INSERT INTO chats (uuid, type, created_at, avatar_link)
-	VALUES (gen_random_uuid(), 'private', CURRENT_TIMESTAMP, $1)
-	RETURNING id, uuid;
-`
-	err := r.connection.QueryRow(query, avatarLink).Scan(&chatID, &chatUUID)
-	if err != nil {
-		return "", fmt.Errorf("failed to create chat in db: %v", err)
-	}
-
-	query = `
-INSERT INTO chat_members (chat_id, user_uuid)
-VALUES ($1, $2), ($1, $3);
-`
-	_, err = r.connection.Exec(query, chatID, initiatorID, companionID)
-	if err != nil {
-		return "", fmt.Errorf("failed to create chat in db: %v", err)
-	}
-	return chatUUID, nil
 }

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/s21platform/chat-service/internal/model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"time"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
@@ -30,7 +28,7 @@ func (s *Server) CreateChat(ctx context.Context, in *chat.CreateChatIn) (*chat.C
 
 	initiatorID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "failed to find initiatorID")
+		return nil, fmt.Errorf("failed to find initiatorID")
 	}
 
 	chatUUID, err := s.repository.CreateChat(initiatorID, in.CompanionUuid)

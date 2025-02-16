@@ -26,8 +26,8 @@ func main() {
 
 	chatService := service.New(dbRepo)
 	server := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(infra.Logger(logger)),
 		grpc.ChainUnaryInterceptor(infra.AuthInterceptor),
+		grpc.ChainUnaryInterceptor(infra.Logger(logger)),
 	)
 
 	chat.RegisterChatServiceServer(server, chatService)
