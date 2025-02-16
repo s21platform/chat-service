@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS messages
     sender_uuid UUID,
     content     TEXT NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    edited_at   TIMESTAMP DEFAULT NULL,
+    edited_at   TIMESTAMP,
     deleted_for deletion_mode
 );
 
