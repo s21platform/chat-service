@@ -44,6 +44,21 @@ func (s *Server) CreateChat(ctx context.Context, in *chat.CreateChatIn) (*chat.C
 	}, nil
 }
 
+func (s *Server) GetChats(ctx context.Context, in *chat.GetChatsIn) (*chat.GetChatsOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("GetChats")
+
+	chats, err := s.repository.GetChats(in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get chats: %v", err))
+		return nil, fmt.Errorf("failed to get chats: %v", err)
+	}
+
+	return &chat.GetChatsOut{
+		Chats: chats.FromDTO(),
+	}, nil
+}
+
 func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessagesIn) (*chat.GetRecentMessagesOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("GetRecentMessages")
