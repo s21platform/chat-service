@@ -4,15 +4,14 @@ CREATE TYPE deletion_mode AS ENUM ('self', 'all');
 CREATE TABLE IF NOT EXISTS messages
 (
     id          UUID PRIMARY KEY,
-    chat_uuid   UUID,
+    chat_uuid   UUID REFERENCES chats(uuid),
     sender_uuid UUID,
     content     TEXT NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    edited_at   TIMESTAMP DEFAULT NULL,
-    delete_for     deletion_mode   DEFAULT 'self',
-    CONSTRAINT fk_messages_chat_uuid FOREIGN KEY (chat_uuid) REFERENCES chats (uuid)
+    edited_at   TIMESTAMP,
+    deleted_for deletion_mode
 );
 
 -- +goose Down
 DROP TABLE IF EXISTS messages;
-DROP TYPE IF EXISTS delete_for;
+DROP TYPE IF EXISTS deletion_mode;

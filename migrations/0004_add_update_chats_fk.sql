@@ -4,4 +4,4 @@ ADD CONSTRAINT fk_chats_last_message FOREIGN KEY (last_message_id) REFERENCES me
 
 -- +goose Down
 ALTER TABLE chats
-DROP CONSTRAINT fk_chats_last_message;
+DROP CONSTRAINT IF EXISTS fk_chats_last_message;

@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/s21platform/chat-service/internal/model"
 	"time"
+
+	"github.com/s21platform/chat-service/internal/model"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	"github.com/s21platform/chat-service/internal/config"
@@ -20,6 +21,21 @@ func New(repo DBRepo) *Server {
 	return &Server{
 		repository: repo,
 	}
+}
+
+func (s *Server) GetChats(ctx context.Context, in *chat.GetChatsIn) (*chat.GetChatsOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("GetChats")
+
+	chats, err := s.repository.GetChats(in.Uuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get chats: %v", err))
+		return nil, fmt.Errorf("failed to get chats: %v", err)
+	}
+
+	return &chat.GetChatsOut{
+		Chats: chats.FromDTO(),
+	}, nil
 }
 
 func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessagesIn) (*chat.GetRecentMessagesOut, error) {
