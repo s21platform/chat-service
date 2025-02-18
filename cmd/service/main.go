@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/s21platform/chat-service/internal/infra"
-	logger_lib "github.com/s21platform/logger-lib"
-
-	"github.com/s21platform/chat-service/internal/config"
-	db "github.com/s21platform/chat-service/internal/repository/postgres"
-	"github.com/s21platform/chat-service/internal/service"
+	_ "github.com/lib/pq" // PostgreSQL driver
 	"google.golang.org/grpc"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
+	logger_lib "github.com/s21platform/logger-lib"
 
-	_ "github.com/lib/pq" // PostgreSQL driver
+	"github.com/s21platform/chat-service/internal/config"
+	"github.com/s21platform/chat-service/internal/infra"
+	db "github.com/s21platform/chat-service/internal/repository/postgres"
+	"github.com/s21platform/chat-service/internal/service"
 )
 
 func main() {
@@ -26,8 +25,9 @@ func main() {
 
 	chatService := service.New(dbRepo)
 	server := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(infra.AuthInterceptor),
-		grpc.ChainUnaryInterceptor(infra.Logger(logger)),
+		grpc.ChainUnaryInterceptor(
+			infra.AuthInterceptor,
+			infra.Logger(logger)),
 	)
 
 	chat.RegisterChatServiceServer(server, chatService)

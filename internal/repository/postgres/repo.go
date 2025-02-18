@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 
+	sq "github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
+
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
-
-	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -42,23 +43,36 @@ func (r *Repository) CreateChat(initiatorID, companionID string) (string, error)
 	var chatID int
 	var chatUUID string
 
-	query := `
-	INSERT INTO chats (uuid, type, avatar_link)
-	VALUES (gen_random_uuid(), $1, $2)
-	RETURNING id, uuid;
-`
-	err := r.connection.QueryRow(query, typePrivate, defaultAvatar).Scan(&chatID, &chatUUID)
+	query := sq.Insert("chats").
+		Columns("uuid", "type", "avatar_link").
+		Values(sq.Expr("gen_random_uuid()"), typePrivate, defaultAvatar).
+		Suffix("RETURNING id, uuid").
+		PlaceholderFormat(sq.Dollar) // Используем $1, $2...
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return "", fmt.Errorf("failed to build chat insert query: %v", err)
+	}
+
+	err = r.connection.QueryRow(sqlStr, args...).Scan(&chatID, &chatUUID)
 	if err != nil {
 		return "", fmt.Errorf("failed to create chat in db: %v", err)
 	}
 
-	query = `
-INSERT INTO chat_members (chat_id, user_uuid)
-VALUES ($1, $2), ($1, $3);
-`
-	_, err = r.connection.Exec(query, chatID, initiatorID, companionID)
+	query = sq.Insert("chat_members").
+		Columns("chat_id", "user_uuid").
+		Values(chatID, initiatorID).
+		Values(chatID, companionID).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err = query.ToSql()
 	if err != nil {
-		return "", fmt.Errorf("failed to create chat in db: %v", err)
+		return "", fmt.Errorf("failed to build chat_members insert query: %v", err)
+	}
+
+	_, err = r.connection.Exec(sqlStr, args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to insert chat members in db: %v", err)
 	}
 
 	return chatUUID, nil
@@ -67,19 +81,26 @@ VALUES ($1, $2), ($1, $3);
 func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
-	query := `
-		SELECT
-			COALESCE(m.content, '') AS content,
-			c.chat_name,
-			c.avatar_link,
-			m.created_at,
-			c.uuid
-		FROM chat_members cm
-			JOIN public.chats c on c.id = cm.chat_id
-			LEFT JOIN public.messages m ON c.last_message_id = m.id
-		WHERE cm.user_uuid = $1
-		ORDER BY m.created_at DESC`
-	err := r.connection.Select(&chats, query, UUID)
+	query := sq.Select(
+		"COALESCE(m.content, '') AS content",
+		"c.chat_name",
+		"c.avatar_link",
+		"m.created_at",
+		"c.uuid",
+	).
+		From("chat_members cm").
+		Join("public.chats c ON c.id = cm.chat_id").
+		LeftJoin("public.messages m ON c.last_message_id = m.id").
+		Where(sq.Eq{"cm.user_uuid": UUID}).
+		OrderBy("m.created_at DESC").
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
+	}
+
+	err = r.connection.Select(&chats, sqlStr, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chats from db: %v", err)
 	}
@@ -90,12 +111,23 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 func (r *Repository) GetRecentMessages(chatUUID string) (*[]model.Message, error) {
 	var messages []model.Message
 
-	query := `
-		SELECT sender_uuid, content, created_at FROM messages
-		WHERE chat_uuid = $1
-		ORDER BY created_at DESC
-		LIMIT 15`
-	err := r.connection.Select(&messages, query, chatUUID)
+	query := sq.Select(
+		"sender_uuid",
+		"content",
+		"created_at",
+	).
+		From("messages").
+		Where(sq.Eq{"chat_uuid": chatUUID}).
+		OrderBy("created_at DESC").
+		Limit(15).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetRecentMessages query: %v", err)
+	}
+
+	err = r.connection.Select(&messages, sqlStr, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages from db: %v", err)
 	}
@@ -106,12 +138,19 @@ func (r *Repository) GetRecentMessages(chatUUID string) (*[]model.Message, error
 func (r *Repository) EditMessage(messageID string, newContent string) (*model.EditedMessage, error) {
 	var editedMessage model.EditedMessage
 
-	query := `
-		UPDATE messages 
-		SET content = $1, edited_at = CURRENT_TIMESTAMP
-		WHERE id = $2
-		RETURNING id, content`
-	err := r.connection.Get(&editedMessage, query, newContent, messageID)
+	query := sq.Update("messages").
+		Set("content", newContent).
+		Set("edited_at", sq.Expr("CURRENT_TIMESTAMP")).
+		Where(sq.Eq{"id": messageID}).
+		Suffix("RETURNING id, content").
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build EditMessage query: %v", err)
+	}
+
+	err = r.connection.Get(&editedMessage, sqlStr, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to edit message in db: %v", err)
 	}
@@ -120,11 +159,17 @@ func (r *Repository) EditMessage(messageID string, newContent string) (*model.Ed
 }
 
 func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
-	query := `
-	UPDATE messages
-	SET deleted_for = $1
-	WHERE id = $2`
-	_, err := r.connection.Exec(query, mode, messageID)
+	query := sq.Update("messages").
+		Set("deleted_for", mode).
+		Where(sq.Eq{"id": messageID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build DeleteMessage query: %v", err)
+	}
+
+	_, err = r.connection.Exec(sqlStr, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete message in db: %v", err)
 	}
