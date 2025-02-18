@@ -3,13 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/s21platform/chat-service/internal/model"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
-	"github.com/s21platform/chat-service/internal/config"
 	logger_lib "github.com/s21platform/logger-lib"
+
+	"github.com/s21platform/chat-service/internal/config"
+	"github.com/s21platform/chat-service/internal/model"
 )
 
 type Server struct {
@@ -23,11 +22,36 @@ func New(repo DBRepo) *Server {
 	}
 }
 
-func (s *Server) GetChats(ctx context.Context, in *chat.GetChatsIn) (*chat.GetChatsOut, error) {
+func (s *Server) CreateChat(ctx context.Context, in *chat.CreateChatIn) (*chat.CreateChatOut, error) {
+	logger := logger_lib.FromContext(ctx, config.KeyLogger)
+	logger.AddFuncName("CreateChat")
+
+	initiatorID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to find initiatorID")
+	}
+
+	chatUUID, err := s.repository.CreateChat(initiatorID, in.CompanionUuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to create chat: %v", err))
+		return nil, fmt.Errorf("failed to create chat: %v", err)
+	}
+
+	return &chat.CreateChatOut{
+		NewChatUuid: chatUUID,
+	}, nil
+}
+
+func (s *Server) GetChats(ctx context.Context, _ *chat.ChatEmpty) (*chat.GetChatsOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("GetChats")
 
-	chats, err := s.repository.GetChats(in.Uuid)
+	uuid, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to find uuid")
+	}
+
+	chats, err := s.repository.GetChats(uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get chats: %v", err))
 		return nil, fmt.Errorf("failed to get chats: %v", err)
@@ -38,29 +62,24 @@ func (s *Server) GetChats(ctx context.Context, in *chat.GetChatsIn) (*chat.GetCh
 	}, nil
 }
 
-func (s *Server) GetRecentMessages(ctx context.Context, in *chat.GetRecentMessagesIn) (*chat.GetRecentMessagesOut, error) {
+func (s *Server) GetRecentMessages(ctx context.Context, _ *chat.ChatEmpty) (*chat.GetRecentMessagesOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("GetRecentMessages")
 
-	data, err := s.repository.GetRecentMessages(in.Uuid)
+	uuid, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to find uuid")
+	}
+
+	messageList, err := s.repository.GetRecentMessages(uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to fetch chat: %v", err))
 		return nil, fmt.Errorf("failed to fetch chat: %v", err)
 	}
 
-	out := &chat.GetRecentMessagesOut{
-		Messages: make([]*chat.Message, len(*data)),
-	}
-
-	for i, message := range *data {
-		out.Messages[i] = &chat.Message{
-			Uuid:    message.Uuid.String(),
-			Content: message.Content,
-			SentAt:  message.SentAt.Format(time.RFC3339),
-		}
-	}
-
-	return out, nil
+	return &chat.GetRecentMessagesOut{
+		Messages: messageList.FromDTO(),
+	}, nil
 }
 
 func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat.EditMessageOut, error) {
@@ -73,12 +92,10 @@ func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat
 		return nil, fmt.Errorf("failed to edit message: %v", err)
 	}
 
-	out := &chat.EditMessageOut{
+	return &chat.EditMessageOut{
 		UuidMessage: data.MessageID.String(),
 		NewContent:  data.Content,
-	}
-
-	return out, nil
+	}, nil
 }
 
 func (s *Server) DeleteMessage(ctx context.Context, in *chat.DeleteMessageIn) (*chat.DeleteMessageOut, error) {
