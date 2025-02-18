@@ -6,7 +6,7 @@ import (
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
-	
+
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
 )
@@ -71,13 +71,11 @@ func (s *Server) GetRecentMessages(ctx context.Context, _ *chat.ChatEmpty) (*cha
 		return nil, fmt.Errorf("failed to find uuid")
 	}
 
-	data, err := s.repository.GetRecentMessages(uuid)
+	messageList, err := s.repository.GetRecentMessages(uuid)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to fetch chat: %v", err))
 		return nil, fmt.Errorf("failed to fetch chat: %v", err)
 	}
-
-	messageList := model.MessageList(*data)
 
 	return &chat.GetRecentMessagesOut{
 		Messages: messageList.FromDTO(),

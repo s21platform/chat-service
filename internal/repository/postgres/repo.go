@@ -108,8 +108,8 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 	return &chats, nil
 }
 
-func (r *Repository) GetRecentMessages(chatUUID string) (*[]model.Message, error) {
-	var messages []model.Message
+func (r *Repository) GetRecentMessages(chatUUID string) (*model.MessageList, error) {
+	var messages model.MessageList
 
 	query := sq.Select(
 		"sender_uuid",

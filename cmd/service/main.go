@@ -27,7 +27,8 @@ func main() {
 	server := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptor,
-			infra.Logger(logger)),
+			infra.Logger(logger),
+		),
 	)
 
 	chat.RegisterChatServiceServer(server, chatService)
