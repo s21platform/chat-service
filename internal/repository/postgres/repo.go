@@ -13,8 +13,10 @@ import (
 
 const (
 	//TODO: убрать после добавления kafka-consumer-avatar
-	defaultAvatar = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
-	typePrivate   = "private"
+	defaultAvatar        = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
+	typePrivate          = "private"
+	defaultInitiatorName = "initiator"
+	defaultCompanionName = "companion"
 )
 
 type Repository struct {
@@ -40,32 +42,22 @@ func (r *Repository) Close() {
 }
 
 func (r *Repository) CreateChat(initiatorID, companionID string) (string, error) {
-	var chatID int
 	var chatUUID string
 
-	query := sq.Insert("chats").
-		Columns("uuid", "type", "avatar_link").
-		Values(sq.Expr("gen_random_uuid()"), typePrivate, defaultAvatar).
-		Suffix("RETURNING id, uuid").
-		PlaceholderFormat(sq.Dollar) // Используем $1, $2...
+	sqlInsertChat := "INSERT INTO chats DEFAULT VALUES RETURNING id"
 
-	sqlStr, args, err := query.ToSql()
-	if err != nil {
-		return "", fmt.Errorf("failed to build chat insert query: %v", err)
-	}
-
-	err = r.connection.QueryRow(sqlStr, args...).Scan(&chatID, &chatUUID)
+	err := r.connection.QueryRow(sqlInsertChat).Scan(&chatUUID)
 	if err != nil {
 		return "", fmt.Errorf("failed to create chat in db: %v", err)
 	}
 
-	query = sq.Insert("chat_members").
-		Columns("chat_id", "user_uuid").
-		Values(chatID, initiatorID).
-		Values(chatID, companionID).
+	query := sq.Insert("chats_user").
+		Columns("chat_id", "user_uuid", "username", "avatar_link").
+		Values(chatUUID, initiatorID, defaultInitiatorName, defaultAvatar).
+		Values(chatUUID, companionID, defaultCompanionName, defaultAvatar).
 		PlaceholderFormat(sq.Dollar)
 
-	sqlStr, args, err = query.ToSql()
+	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return "", fmt.Errorf("failed to build chat_members insert query: %v", err)
 	}
