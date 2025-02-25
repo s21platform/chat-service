@@ -13,30 +13,35 @@ import (
 	"github.com/s21platform/chat-service/internal/model"
 )
 
-type Client struct {
+type Service struct {
 	client userproto.UserServiceClient
 }
 
-func MustConnect(cfg *config.Config) *Client {
-	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.UserService.Host, cfg.UserService.Port),
+func NewService(cfg *config.Config) *Service {
+	connStr := fmt.Sprintf("%s:%s", cfg.UserService.Host, cfg.UserService.Port)
+
+	conn, err := grpc.NewClient(
+		connStr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Fatalf("failed to connect to user-service: %v", err)
 	}
-	
-	uClient := userproto.NewUserServiceClient(conn)
 
-	return &Client{client: uClient}
+	client := userproto.NewUserServiceClient(conn)
+
+	return &Service{client: client}
 }
 
-func (c *Client) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
-	// Запрос по gRPC
-	resp, err := c.client.GetUserInfoByUUID(ctx, &userproto.GetUserInfoByUUIDIn{Uuid: userUUID})
+func (c *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
+	resp, err := c.client.GetUserInfoByUUID(
+		ctx,
+		&userproto.GetUserInfoByUUIDIn{Uuid: userUUID},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info from user-service: %v", err)
 	}
-	// Преобразование приходящего ответа в model проекта
+
 	return &model.UserInfo{
 		UserName:   resp.Nickname,
 		AvatarLink: resp.Avatar,

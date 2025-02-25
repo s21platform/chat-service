@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/s21platform/chat-service/internal/client/user"
+	"github.com/s21platform/chat-service/internal/rpc/user"
 	"net"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
@@ -24,7 +24,7 @@ func main() {
 	dbRepo := db.New(cfg)
 	defer dbRepo.Close()
 
-	userClient := user.MustConnect(cfg)
+	userClient := user.NewService(cfg)
 
 	chatService := service.New(dbRepo, userClient)
 	server := grpc.NewServer(

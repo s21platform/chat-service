@@ -39,11 +39,10 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreatePrivateChat(
-	initiatorID, initiatorName, initiatorAvatar string,
-	companionID, companionName, companionAvatar string) (string, error) {
+func (r *Repository) CreatePrivateChat(params *model.CreatePrivatChatParams) (string, error) {
 	var chatUUID string
 
+	//TODO: сделать через Squirrel
 	sqlStr := "INSERT INTO chats DEFAULT VALUES RETURNING id"
 
 	err := r.connection.QueryRow(sqlStr).Scan(&chatUUID)
@@ -53,8 +52,8 @@ func (r *Repository) CreatePrivateChat(
 
 	query := sq.Insert("chats_user").
 		Columns("chat_id", "user_uuid", "username", "avatar_link").
-		Values(chatUUID, initiatorID, initiatorName, initiatorAvatar).
-		Values(chatUUID, companionID, companionName, companionAvatar).
+		Values(chatUUID, params.InitiatorID).
+		Values(chatUUID, params.CompanionID, params.CompanionName, params.CompanionAvatar).
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
