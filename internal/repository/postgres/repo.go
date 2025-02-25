@@ -51,7 +51,7 @@ func (r *Repository) CreatePrivateChat(params *model.CreatePrivatChatParams) (st
 	}
 
 	query := sq.Insert("chats_user").
-		Columns("chat_id", "user_uuid", "username", "avatar_link").
+		Columns("chat_uuid", "user_uuid", "username", "avatar_link").
 		Values(chatUUID, params.InitiatorID).
 		Values(chatUUID, params.CompanionID, params.CompanionName, params.CompanionAvatar).
 		PlaceholderFormat(sq.Dollar)
