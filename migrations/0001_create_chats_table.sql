@@ -1,9 +1,11 @@
 -- +goose Up
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE TABLE chats
+CREATE TABLE IF NOT EXISTS chats
 (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP
+    uuid       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    deleted_by UUID
 );
 
 -- +goose Down
