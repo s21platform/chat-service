@@ -11,11 +11,11 @@ import (
 	"github.com/s21platform/chat-service/internal/model"
 )
 
-const (
-	//TODO: убрать после добавления kafka-consumer-avatar
-	defaultAvatar = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
-	typePrivate   = "private"
-)
+//const (
+//	//TODO: убрать после добавления kafka-consumer-avatar
+//	defaultAvatar = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
+//	typePrivate   = "private"
+//)
 
 type Repository struct {
 	connection *sqlx.DB

@@ -18,13 +18,13 @@ type Client struct {
 }
 
 func MustConnect(cfg *config.Config) *Client {
-	conn, err := grpc.Dial(
-		fmt.Sprintf("%s:%s", cfg.UserService.Host, cfg.UserService.Port),
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.UserService.Host, cfg.UserService.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Fatalf("failed to connect to user-service: %v", err)
 	}
+	
 	uClient := userproto.NewUserServiceClient(conn)
 
 	return &Client{client: uClient}
