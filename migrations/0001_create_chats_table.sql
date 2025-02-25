@@ -1,18 +1,13 @@
 -- +goose Up
-CREATE TYPE chat_type AS ENUM ('private', 'group');
-
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS chats
 (
-    id              SERIAL PRIMARY KEY,
-    uuid            UUID UNIQUE NOT NULL,
-    chat_name      TEXT,
-    type            chat_type   NOT NULL,
-    avatar_link     TEXT NOT NULL,
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_message_id UUID,
-    owner_uuid      UUID
+    uuid       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    deleted_by UUID
 );
 
 -- +goose Down
 DROP TABLE IF EXISTS chats;
-DROP TYPE IF EXISTS chat_type;
+DROP EXTENSION IF EXISTS pgcrypto;
