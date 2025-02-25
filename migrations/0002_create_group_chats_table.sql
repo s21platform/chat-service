@@ -1,8 +1,10 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS group_chats
 (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP
+    uuid         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    deleted_by UUID
 );
 
 -- +goose Down
