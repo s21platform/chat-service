@@ -5,7 +5,7 @@ import (
 )
 
 type DBRepo interface {
-	CreatePrivateChat(params *model.CreatePrivatChatParams) (string, error)
+	CreatePrivateChat(params *model.PrivateChatSetup) (string, error)
 	GetChats(UUID string) (*model.ChatInfoList, error)
 	GetRecentMessages(chatUUID string) (*model.MessageList, error)
 	DeleteMessage(messageID string, mode string) (bool, error)

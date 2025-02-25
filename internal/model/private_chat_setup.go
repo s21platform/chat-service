@@ -1,6 +1,6 @@
 package model
 
-type CreatePrivatChatParams struct {
+type PrivateChatSetup struct {
 	InitiatorID     string
 	CompanionID     string
 	CompanionName   string

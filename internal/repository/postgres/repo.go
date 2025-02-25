@@ -39,7 +39,7 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreatePrivateChat(params *model.CreatePrivatChatParams) (string, error) {
+func (r *Repository) CreatePrivateChat(params *model.PrivateChatSetup) (string, error) {
 	var chatUUID string
 
 	//TODO: сделать через Squirrel

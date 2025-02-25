@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/s21platform/chat-service/internal/rpc/user"
+	"github.com/s21platform/chat-service/internal/client/user"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
@@ -15,10 +15,10 @@ import (
 type Server struct {
 	chat.UnimplementedChatServiceServer
 	repository DBRepo
-	userClient *user.Service
+	userClient *client.Service
 }
 
-func New(repo DBRepo, userClient *user.Service) *Server {
+func New(repo DBRepo, userClient *client.Service) *Server {
 	return &Server{
 		repository: repo,
 		userClient: userClient,
@@ -31,7 +31,8 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 
 	initiatorID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
-		return nil, fmt.Errorf("failed to find initiatorID")
+		logger.Error(fmt.Sprintf("failed to get initiatorID"))
+		return nil, fmt.Errorf("failed to get initiatorID")
 	}
 
 	companionInfo, err := s.userClient.GetUserInfoByUUID(ctx, in.CompanionUuid)
@@ -40,7 +41,7 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 		return nil, fmt.Errorf("failed to get companion info: %v", err)
 	}
 
-	chatParams := &model.CreatePrivatChatParams{
+	chatParams := &model.PrivateChatSetup{
 		InitiatorID:     initiatorID,
 		CompanionID:     in.CompanionUuid,
 		CompanionName:   companionInfo.UserName,
