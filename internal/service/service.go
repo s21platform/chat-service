@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/s21platform/chat-service/internal/client/user"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
@@ -14,30 +15,46 @@ import (
 type Server struct {
 	chat.UnimplementedChatServiceServer
 	repository DBRepo
+	userClient *user.Client
 }
 
-func New(repo DBRepo) *Server {
+func New(repo DBRepo, userClient *user.Client) *Server {
 	return &Server{
 		repository: repo,
+		userClient: userClient,
 	}
 }
 
-func (s *Server) CreateChat(ctx context.Context, in *chat.CreateChatIn) (*chat.CreateChatOut, error) {
+func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateChatIn) (*chat.CreatePrivateChatOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("CreateChat")
+	logger.AddFuncName("CreatePrivateChat")
 
 	initiatorID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
 		return nil, fmt.Errorf("failed to find initiatorID")
 	}
 
-	chatUUID, err := s.repository.CreateChat(initiatorID, in.CompanionUuid)
+	initiatorInfo, err := s.userClient.GetUserInfoByUUID(ctx, initiatorID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get initiator info: %v", err))
+		return nil, fmt.Errorf("failed to get initiator info: %v", err)
+	}
+
+	companionInfo, err := s.userClient.GetUserInfoByUUID(ctx, in.CompanionUuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get companion info: %v", err))
+		return nil, fmt.Errorf("failed to get companion info: %v", err)
+	}
+
+	chatUUID, err := s.repository.CreatePrivateChat(
+		initiatorID, initiatorInfo.UserName, initiatorInfo.AvatarLink,
+		in.CompanionUuid, companionInfo.UserName, companionInfo.AvatarLink)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to create chat: %v", err))
 		return nil, fmt.Errorf("failed to create chat: %v", err)
 	}
 
-	return &chat.CreateChatOut{
+	return &chat.CreatePrivateChatOut{
 		NewChatUuid: chatUUID,
 	}, nil
 }

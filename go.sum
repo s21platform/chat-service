@@ -35,10 +35,12 @@ github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/s21platform/chat-proto v0.0.9 h1:pwYj8c8xh6OYcpsFItTLOqvao3xoq1mflh+meOQmn8M=
-github.com/s21platform/chat-proto v0.0.9/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
+github.com/s21platform/chat-proto v0.0.10 h1:fIFNqkJY3qFHgg9O6YXV9ZtVX2J2+F+N7Th01rKkeGA=
+github.com/s21platform/chat-proto v0.0.10/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
 github.com/s21platform/logger-lib v0.0.3 h1:FSrPaJCW+fodzX3Mkce85WsB0/03ZZHtSEXaHqHlJFo=
 github.com/s21platform/logger-lib v0.0.3/go.mod h1:DpD0CWM17ApEwayEZXhQqb3gos1TpumQfU+uRrpaSCI=
+github.com/s21platform/user-proto v0.0.12 h1:mpTR4zggIrWQ1d+aJScYrWh/HNduUHrf1fCg6aPUGnw=
+github.com/s21platform/user-proto v0.0.12/go.mod h1:+W3ciXEQrPUZ3+KOiEyXV7OZCxcfoyVV2WUkR25NfHM=
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 go.opentelemetry.io/otel v1.31.0 h1:NsJcKPIW0D0H3NgzPDHmo0WW6SptzPdqg/L1zsIm2hY=

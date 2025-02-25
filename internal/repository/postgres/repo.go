@@ -13,10 +13,8 @@ import (
 
 const (
 	//TODO: убрать после добавления kafka-consumer-avatar
-	defaultAvatar        = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
-	typePrivate          = "private"
-	defaultInitiatorName = "initiator"
-	defaultCompanionName = "companion"
+	defaultAvatar = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
+	typePrivate   = "private"
 )
 
 type Repository struct {
@@ -41,20 +39,22 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreateChat(initiatorID, companionID string) (string, error) {
+func (r *Repository) CreatePrivateChat(
+	initiatorID, initiatorName, initiatorAvatar string,
+	companionID, companionName, companionAvatar string) (string, error) {
 	var chatUUID string
 
-	sqlInsertChat := "INSERT INTO chats DEFAULT VALUES RETURNING id"
+	sqlStr := "INSERT INTO chats DEFAULT VALUES RETURNING id"
 
-	err := r.connection.QueryRow(sqlInsertChat).Scan(&chatUUID)
+	err := r.connection.QueryRow(sqlStr).Scan(&chatUUID)
 	if err != nil {
 		return "", fmt.Errorf("failed to create chat in db: %v", err)
 	}
 
 	query := sq.Insert("chats_user").
 		Columns("chat_id", "user_uuid", "username", "avatar_link").
-		Values(chatUUID, initiatorID, defaultInitiatorName, defaultAvatar).
-		Values(chatUUID, companionID, defaultCompanionName, defaultAvatar).
+		Values(chatUUID, initiatorID, initiatorName, initiatorAvatar).
+		Values(chatUUID, companionID, companionName, companionAvatar).
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
