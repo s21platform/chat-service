@@ -31,7 +31,7 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 
 	initiatorID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
-		logger.Error(fmt.Sprintf("failed to get initiatorID"))
+		logger.Error("failed to get initiatorID")
 		return nil, fmt.Errorf("failed to get initiatorID")
 	}
 

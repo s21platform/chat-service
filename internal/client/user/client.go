@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	userproto "github.com/s21platform/user-proto/user-proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	userproto "github.com/s21platform/user-proto/user-proto"
 
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
