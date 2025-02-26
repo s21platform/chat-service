@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/s21platform/chat-service/internal/client/user"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 
+	"github.com/s21platform/chat-service/internal/client/user"
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
 )
