@@ -7,7 +7,6 @@ import (
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 
-	"github.com/s21platform/chat-service/internal/client/user"
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
 )
@@ -15,10 +14,10 @@ import (
 type Server struct {
 	chat.UnimplementedChatServiceServer
 	repository DBRepo
-	userClient *client.Service
+	userClient UserClient
 }
 
-func New(repo DBRepo, userClient *client.Service) *Server {
+func New(repo DBRepo, userClient UserClient) *Server {
 	return &Server{
 		repository: repo,
 		userClient: userClient,

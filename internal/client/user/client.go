@@ -31,8 +31,8 @@ func NewService(cfg *config.Config) *Service {
 	return &Service{client: client}
 }
 
-func (c *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
-	resp, err := c.client.GetUserInfoByUUID(ctx, &userproto.GetUserInfoByUUIDIn{Uuid: userUUID})
+func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
+	resp, err := s.client.GetUserInfoByUUID(ctx, &userproto.GetUserInfoByUUIDIn{Uuid: userUUID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info from user-service: %v", err)
 	}
