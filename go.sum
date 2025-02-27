@@ -41,6 +41,8 @@ github.com/s21platform/chat-proto v0.0.10 h1:fIFNqkJY3qFHgg9O6YXV9ZtVX2J2+F+N7Th
 github.com/s21platform/chat-proto v0.0.10/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
 github.com/s21platform/logger-lib v0.0.3 h1:FSrPaJCW+fodzX3Mkce85WsB0/03ZZHtSEXaHqHlJFo=
 github.com/s21platform/logger-lib v0.0.3/go.mod h1:DpD0CWM17ApEwayEZXhQqb3gos1TpumQfU+uRrpaSCI=
+github.com/s21platform/logger-lib v0.0.6 h1:Aa3wV7zsaUSUkLa4P8stKNKxmKpZEn9dNBsk00I7Ncw=
+github.com/s21platform/logger-lib v0.0.6/go.mod h1:KjnZvBFSCUriTW9QCp9y1LAPU4gUo3m8PmWNR3Th7MI=
 github.com/s21platform/user-proto v0.0.12 h1:mpTR4zggIrWQ1d+aJScYrWh/HNduUHrf1fCg6aPUGnw=
 github.com/s21platform/user-proto v0.0.12/go.mod h1:+W3ciXEQrPUZ3+KOiEyXV7OZCxcfoyVV2WUkR25NfHM=
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=

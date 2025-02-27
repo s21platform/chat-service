@@ -54,7 +54,7 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		assert.Equal(t, "chat_uuid", chatUUID.NewChatUuid)
 	})
 
-	t.Run("not_initiatorUUID", func(t *testing.T) {
+	t.Run("no_initiatorUUID", func(t *testing.T) {
 		badCtx := context.WithValue(context.Background(),
 			config.KeyLogger, logger_lib.New("localhost", "8080", "chat-service", "test"))
 
@@ -95,5 +95,4 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to create chat")
 	})
-
 }

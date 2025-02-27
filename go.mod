@@ -10,7 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/s21platform/chat-proto v0.0.10
-	github.com/s21platform/logger-lib v0.0.3
+	github.com/s21platform/logger-lib v0.0.6
 	github.com/s21platform/user-proto v0.0.12
 	github.com/stretchr/testify v1.2.2
 	google.golang.org/grpc v1.69.2
