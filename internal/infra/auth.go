@@ -21,7 +21,7 @@ func AuthInterceptor(
 		return nil, status.Error(codes.Unauthenticated, "no info in metadata")
 	}
 
-	userIDs, ok := md["user_uuid"]
+	userIDs, ok := md["uuid"]
 	if !ok || len(userIDs) != 1 {
 		return nil, status.Errorf(codes.Unauthenticated, "no uuid or more than one in metadata")
 	}

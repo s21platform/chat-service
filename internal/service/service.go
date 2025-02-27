@@ -40,14 +40,27 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 		return nil, fmt.Errorf("failed to get companion info: %v", err)
 	}
 
-	chatParams := &model.PrivateChatSetup{
+	initiatorInfo, err := s.userClient.GetUserInfoByUUID(ctx, initiatorID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get initiator info: %v", err))
+		return nil, fmt.Errorf("failed to get initiator info: %v", err)
+	}
+
+	chatParamsInitiator := &model.PrivateChatSetup{
 		InitiatorID:     initiatorID,
 		CompanionID:     in.CompanionUuid,
 		CompanionName:   companionInfo.UserName,
 		CompanionAvatar: companionInfo.AvatarLink,
 	}
 
-	chatUUID, err := s.repository.CreatePrivateChat(chatParams)
+	chatParamsCompanion := &model.PrivateChatSetup{
+		InitiatorID:     in.CompanionUuid,
+		CompanionID:     initiatorID,
+		CompanionName:   initiatorInfo.UserName,
+		CompanionAvatar: initiatorInfo.AvatarLink,
+	}
+
+	chatUUID, err := s.repository.CreatePrivateChat(chatParamsInitiator, chatParamsCompanion)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to create chat: %v", err))
 		return nil, fmt.Errorf("failed to create chat: %v", err)

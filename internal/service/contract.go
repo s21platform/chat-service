@@ -3,12 +3,12 @@ package service
 
 import (
 	"context"
-	
+
 	"github.com/s21platform/chat-service/internal/model"
 )
 
 type DBRepo interface {
-	CreatePrivateChat(params *model.PrivateChatSetup) (string, error)
+	CreatePrivateChat(paramsInitiator *model.PrivateChatSetup, paramsCompanion *model.PrivateChatSetup) (string, error)
 	GetChats(UUID string) (*model.ChatInfoList, error)
 	GetRecentMessages(chatUUID string) (*model.MessageList, error)
 	DeleteMessage(messageID string, mode string) (bool, error)

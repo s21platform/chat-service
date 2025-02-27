@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/metadata"
 	"log"
 
 	"google.golang.org/grpc"
@@ -32,6 +33,8 @@ func NewService(cfg *config.Config) *Service {
 }
 
 func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
+	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("uuid", userUUID))
+
 	resp, err := s.client.GetUserInfoByUUID(ctx, &userproto.GetUserInfoByUUIDIn{Uuid: userUUID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info from user-service: %v", err)
