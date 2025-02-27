@@ -26,10 +26,10 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 	mockUserClient := NewMockUserClient(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
-	ctx := context.Background()
 	initiatorUUID := uuid.New().String()
 	companionUUID := uuid.New().String()
 
+	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, initiatorUUID)
 
@@ -37,6 +37,7 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
 			Return(&model.UserInfo{
 				UserName:   "test_user",
@@ -56,8 +57,10 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 	})
 
 	t.Run("no_initiatorUUID", func(t *testing.T) {
-		badCtx := context.WithValue(context.Background(),
-			config.KeyLogger, logger_lib.New("localhost", "8080", "chat-service", "test"))
+		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
+
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+		mockLogger.EXPECT().Error("failed to get initiatorID")
 
 		_, err := s.CreatePrivateChat(badCtx, &chat.CreatePrivateChatIn{
 			CompanionUuid: companionUUID,
