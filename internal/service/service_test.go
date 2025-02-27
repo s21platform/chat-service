@@ -24,18 +24,19 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockUserClient := NewMockUserClient(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 	ctx := context.Background()
 	initiatorUUID := uuid.New().String()
 	companionUUID := uuid.New().String()
 
-	mockLogger := logger_lib.New("localhost", "8080", "chat-service", "test")
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, initiatorUUID)
 
 	s := New(mockRepo, mockUserClient)
 
 	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
 			Return(&model.UserInfo{
 				UserName:   "test_user",
@@ -67,6 +68,9 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 	})
 
 	t.Run("get_companionInfo_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+		mockLogger.EXPECT().Error(gomock.Any())
+
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
 			Return(nil, fmt.Errorf("failed to get companion info"))
 
@@ -79,6 +83,9 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 	})
 
 	t.Run("DB_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+		mockLogger.EXPECT().Error(gomock.Any())
+
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
 			Return(&model.UserInfo{
 				UserName:   "test_user",
