@@ -39,7 +39,7 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreatePrivateChat(paramsInitiator *model.ChatMemberParams, paramsCompanion *model.ChatMemberParams) (string, error) {
+func (r *Repository) CreatePrivateChat(initiator *model.ChatMemberParams, companion *model.ChatMemberParams) (string, error) {
 	var chatUUID string
 
 	//TODO: сделать через Squirrel
@@ -52,8 +52,8 @@ func (r *Repository) CreatePrivateChat(paramsInitiator *model.ChatMemberParams, 
 
 	query := sq.Insert("chats_user").
 		Columns("chat_uuid", "user_uuid", "username", "avatar_link").
-		Values(chatUUID, paramsInitiator.UserID, paramsInitiator.Nickname, paramsInitiator.AvatarLink).
-		Values(chatUUID, paramsCompanion.UserID, paramsCompanion.Nickname, paramsCompanion.AvatarLink).
+		Values(chatUUID, initiator.UserID, initiator.Nickname, initiator.AvatarLink).
+		Values(chatUUID, companion.UserID, companion.Nickname, companion.AvatarLink).
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
