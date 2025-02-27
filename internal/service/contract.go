@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	
 	"github.com/s21platform/chat-service/internal/model"
 )
 

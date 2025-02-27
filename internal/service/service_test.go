@@ -2,20 +2,28 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	chat "github.com/s21platform/chat-proto/chat-proto"
 	"github.com/stretchr/testify/assert"
+
+	chat "github.com/s21platform/chat-proto/chat-proto"
+	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
-	logger_lib "github.com/s21platform/logger-lib"
 )
 
-func TestServer_CreatePrivateChat_Success(t *testing.T) {
+func TestServer_CreatePrivateChat(t *testing.T) {
 	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockUserClient := NewMockUserClient(ctrl)
 
 	ctx := context.Background()
 	initiatorUUID := uuid.New().String()
@@ -25,28 +33,67 @@ func TestServer_CreatePrivateChat_Success(t *testing.T) {
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, initiatorUUID)
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRepo := NewMockDBRepo(ctrl)
-	mockUserClient := NewMockUserClient(ctrl)
-
-	mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-		Return(&model.UserInfo{
-			UserName:   "test_user",
-			AvatarLink: "test_avatar_link",
-		}, nil)
-
-	mockRepo.EXPECT().CreatePrivateChat(gomock.Any()).
-		Return("chat_uuid", nil)
-
 	s := New(mockRepo, mockUserClient)
 
-	out, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-		CompanionUuid: companionUUID,
+	t.Run("success", func(t *testing.T) {
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.UserInfo{
+				UserName:   "test_user",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockRepo.EXPECT().CreatePrivateChat(gomock.Any()).
+			Return("chat_uuid", nil)
+
+		chatUUID, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, chatUUID)
+		assert.Equal(t, "chat_uuid", chatUUID.NewChatUuid)
 	})
-	
-	assert.NoError(t, err)
-	assert.NotNil(t, out)
-	assert.Equal(t, "chat_uuid", out.NewChatUuid)
+
+	t.Run("not_initiatorUUID", func(t *testing.T) {
+		badCtx := context.WithValue(context.Background(),
+			config.KeyLogger, logger_lib.New("localhost", "8080", "chat-service", "test"))
+
+		_, err := s.CreatePrivateChat(badCtx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get initiatorID")
+	})
+
+	t.Run("get_companionInfo_error", func(t *testing.T) {
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(nil, fmt.Errorf("failed to get companion info"))
+
+		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get companion info")
+	})
+
+	t.Run("DB_error", func(t *testing.T) {
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.UserInfo{
+				UserName:   "test_user",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockRepo.EXPECT().CreatePrivateChat(gomock.Any()).
+			Return("", fmt.Errorf("failed to create chat"))
+
+		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create chat")
+	})
+
 }
