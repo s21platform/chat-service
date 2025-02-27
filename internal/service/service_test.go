@@ -38,13 +38,19 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
 
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
 			Return(&model.UserInfo{
-				UserName:   "test_user",
+				UserName:   "test_initiator",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat(gomock.Any()).
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.UserInfo{
+				UserName:   "test_companion",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockRepo.EXPECT().CreatePrivateChat(gomock.Any(), gomock.Any()).
 			Return("chat_uuid", nil)
 
 		chatUUID, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
@@ -70,9 +76,30 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to get initiatorID")
 	})
 
-	t.Run("get_companionInfo_error", func(t *testing.T) {
+	t.Run("get_initiatorSetup_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
 		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
+			Return(nil, fmt.Errorf("failed to get initiator info"))
+
+		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get initiator info")
+	})
+
+	t.Run("get_companionSetup_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
+			Return(&model.UserInfo{
+				UserName:   "test_initiator",
+				AvatarLink: "test_avatar_link",
+			}, nil)
 
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
 			Return(nil, fmt.Errorf("failed to get companion info"))
@@ -89,13 +116,19 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
 			Return(&model.UserInfo{
-				UserName:   "test_user",
+				UserName:   "test_initiator",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat(gomock.Any()).
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.UserInfo{
+				UserName:   "test_companion",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockRepo.EXPECT().CreatePrivateChat(gomock.Any(), gomock.Any()).
 			Return("", fmt.Errorf("failed to create chat"))
 
 		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{

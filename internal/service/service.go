@@ -34,30 +34,28 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 		return nil, fmt.Errorf("failed to get initiatorID")
 	}
 
-	companionInfo, err := s.userClient.GetUserInfoByUUID(ctx, in.CompanionUuid)
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get companion info: %v", err))
-		return nil, fmt.Errorf("failed to get companion info: %v", err)
-	}
-
-	initiatorInfo, err := s.userClient.GetUserInfoByUUID(ctx, initiatorID)
+	initiatorSetup, err := s.userClient.GetUserInfoByUUID(ctx, initiatorID)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get initiator info: %v", err))
 		return nil, fmt.Errorf("failed to get initiator info: %v", err)
 	}
 
-	chatParamsInitiator := &model.PrivateChatSetup{
-		InitiatorID:     initiatorID,
-		CompanionID:     in.CompanionUuid,
-		CompanionName:   companionInfo.UserName,
-		CompanionAvatar: companionInfo.AvatarLink,
+	companionSetup, err := s.userClient.GetUserInfoByUUID(ctx, in.CompanionUuid)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get companion info: %v", err))
+		return nil, fmt.Errorf("failed to get companion info: %v", err)
 	}
 
-	chatParamsCompanion := &model.PrivateChatSetup{
-		InitiatorID:     in.CompanionUuid,
-		CompanionID:     initiatorID,
-		CompanionName:   initiatorInfo.UserName,
-		CompanionAvatar: initiatorInfo.AvatarLink,
+	chatParamsInitiator := &model.ChatMemberParams{
+		UserID:     initiatorID,
+		Nickname:   initiatorSetup.UserName,
+		AvatarLink: initiatorSetup.AvatarLink,
+	}
+
+	chatParamsCompanion := &model.ChatMemberParams{
+		UserID:     in.CompanionUuid,
+		Nickname:   companionSetup.UserName,
+		AvatarLink: companionSetup.AvatarLink,
 	}
 
 	chatUUID, err := s.repository.CreatePrivateChat(chatParamsInitiator, chatParamsCompanion)
