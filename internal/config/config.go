@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	Service  Service
-	Postgres Postgres
-	Metrics  Metrics
-	Logger   Logger
-	Platform Platform
+	Service     Service
+	Postgres    Postgres
+	Metrics     Metrics
+	Logger      Logger
+	Platform    Platform
+	UserService UserService
 }
 
 type Service struct {
@@ -39,6 +40,11 @@ type Logger struct {
 
 type Platform struct {
 	Env string `env:"ENV"`
+}
+
+type UserService struct {
+	Host string `env:"USER_SERVICE_HOST"`
+	Port string `env:"USER_SERVICE_PORT"`
 }
 
 func MustLoad() *Config {
