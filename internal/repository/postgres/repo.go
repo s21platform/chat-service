@@ -99,7 +99,7 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 	return &chats, nil
 }
 
-func (r *Repository) GetPrivateRecentMessages(chatUUID string) (*model.MessageList, error) {
+func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error) {
 	var messages model.MessageList
 
 	query := sq.Select(
@@ -112,7 +112,14 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string) (*model.MessageLi
 	).
 		From("messages").
 		Where(sq.Eq{"chat_uuid": chatUUID}).
-		Where("delete_format IS NULL OR delete_format != 'all'").
+		Where(sq.Or{
+			sq.Eq{"delete_format": nil},      // delete_format IS NULL
+			sq.NotEq{"delete_format": "all"}, // delete_format != 'all'
+			sq.And{
+				sq.Eq{"delete_format": "self"},   // delete_format = 'SELF'
+				sq.NotEq{"deleted_by": userUUID}, // deleted_by != userUUID
+			},
+		}).
 		OrderBy("sent_at DESC").
 		Limit(15).
 		PlaceholderFormat(sq.Dollar)

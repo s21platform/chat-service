@@ -96,18 +96,18 @@ func (mr *MockDBRepoMockRecorder) GetChats(UUID interface{}) *gomock.Call {
 }
 
 // GetPrivateRecentMessages mocks base method.
-func (m *MockDBRepo) GetPrivateRecentMessages(chatUUID string) (*model.MessageList, error) {
+func (m *MockDBRepo) GetPrivateRecentMessages(chatUUID, userUUID string) (*model.MessageList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPrivateRecentMessages", chatUUID)
+	ret := m.ctrl.Call(m, "GetPrivateRecentMessages", chatUUID, userUUID)
 	ret0, _ := ret[0].(*model.MessageList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPrivateRecentMessages indicates an expected call of GetPrivateRecentMessages.
-func (mr *MockDBRepoMockRecorder) GetPrivateRecentMessages(chatUUID interface{}) *gomock.Call {
+func (mr *MockDBRepoMockRecorder) GetPrivateRecentMessages(chatUUID, userUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateRecentMessages", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateRecentMessages), chatUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateRecentMessages", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateRecentMessages), chatUUID, userUUID)
 }
 
 // MockUserClient is a mock of UserClient interface.
