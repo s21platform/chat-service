@@ -99,17 +99,21 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 	return &chats, nil
 }
 
-func (r *Repository) GetRecentMessages(chatUUID string) (*model.MessageList, error) {
+func (r *Repository) GetPrivateRecentMessages(chatUUID string) (*model.MessageList, error) {
 	var messages model.MessageList
 
 	query := sq.Select(
 		"sender_uuid",
 		"content",
-		"created_at",
+		"sent_at",
+		"COALESCE(updated_at, sent_at) AS updated_at",
+		"root_uuid",
+		"parent_uuid",
 	).
 		From("messages").
 		Where(sq.Eq{"chat_uuid": chatUUID}).
-		OrderBy("created_at DESC").
+		Where("delete_format IS NULL OR delete_format != 'all'").
+		OrderBy("sent_at DESC").
 		Limit(15).
 		PlaceholderFormat(sq.Dollar)
 
