@@ -95,6 +95,7 @@ func (s *Server) GetPrivateRecentMessages(ctx context.Context, in *chat.GetPriva
 
 	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
+		logger.Error("failed to find uuid")
 		return nil, fmt.Errorf("failed to find uuid")
 	}
 
