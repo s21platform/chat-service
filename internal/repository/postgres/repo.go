@@ -113,11 +113,11 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) 
 		From("messages").
 		Where(sq.Eq{"chat_uuid": chatUUID}).
 		Where(sq.Or{
-			sq.Eq{"delete_format": nil},      // delete_format IS NULL
-			sq.NotEq{"delete_format": "all"}, // delete_format != 'all'
+			sq.Eq{"delete_format": nil},
+			sq.NotEq{"delete_format": "all"},
 			sq.And{
-				sq.Eq{"delete_format": "self"},   // delete_format = 'SELF'
-				sq.NotEq{"deleted_by": userUUID}, // deleted_by != userUUID
+				sq.Eq{"delete_format": "self"},
+				sq.NotEq{"deleted_by": userUUID},
 			},
 		}).
 		OrderBy("sent_at DESC").
