@@ -89,23 +89,24 @@ func (s *Server) GetChats(ctx context.Context, _ *chat.ChatEmpty) (*chat.GetChat
 	}, nil
 }
 
-func (s *Server) GetRecentMessages(ctx context.Context, _ *chat.ChatEmpty) (*chat.GetRecentMessagesOut, error) {
+func (s *Server) GetPrivateRecentMessages(ctx context.Context, in *chat.GetPrivateRecentMessagesIn) (*chat.GetPrivateRecentMessagesOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("GetRecentMessages")
 
-	uuid, ok := ctx.Value(config.KeyUUID).(string)
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
+		logger.Error("failed to find uuid")
 		return nil, fmt.Errorf("failed to find uuid")
 	}
 
-	messageList, err := s.repository.GetRecentMessages(uuid)
+	messages, err := s.repository.GetPrivateRecentMessages(in.ChatUuid, userUUID)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to fetch chat: %v", err))
 		return nil, fmt.Errorf("failed to fetch chat: %v", err)
 	}
 
-	return &chat.GetRecentMessagesOut{
-		Messages: messageList.FromDTO(),
+	return &chat.GetPrivateRecentMessagesOut{
+		Messages: messages.FromDTO(),
 	}, nil
 }
 
