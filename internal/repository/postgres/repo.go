@@ -69,24 +69,39 @@ func (r *Repository) CreatePrivateChat(initiator *model.ChatMemberParams, compan
 	return chatUUID, nil
 }
 
-func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
+func (r *Repository) GetChats(userUUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
-	query := sq.Select(
-		"COALESCE(m.content, '') AS content",
-		"c.chat_name",
-		"c.avatar_link",
-		"m.created_at",
+	privateChatsQuery := sq.Select(
 		"c.uuid",
+		"c.created_at",
+		"COALESCE(m.content, '') AS content",
+		"COALESCE(NULL, '') AS chat_name",
+		"COALESCE(NULL, '') AS avatar_link",
 	).
-		From("chat_members cm").
-		Join("public.chats c ON c.id = cm.chat_id").
-		LeftJoin("public.messages m ON c.last_message_id = m.id").
-		Where(sq.Eq{"cm.user_uuid": UUID}).
-		OrderBy("m.created_at DESC").
+		From("chats_user cu").
+		Join("chats c ON c.uuid = cu.chat_uuid").
+		LeftJoin("messages m ON c.uuid = m.chat_uuid AND m.sent_at = (SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid)").
+		Where(sq.Eq{"cu.user_uuid": userUUID})
+
+	groupChatsQuery := sq.Select(
+		"gc.uuid",
+		"gc.created_at",
+		"COALESCE(gm.content, '') AS content",
+		"gc.chat_name",
+		"gc.avatar_link",
+	).
+		From("group_chats_user gcu").
+		Join("group_chats gc ON gc.uuid = gcu.chat_uuid").
+		LeftJoin("group_messages gm ON gc.uuid = gm.chat_uuid AND gm.sent_at = (SELECT MAX(sent_at) FROM group_messages WHERE chat_uuid = gc.uuid)").
+		Where(sq.Eq{"gcu.user_uuid": userUUID})
+
+	finalQuery := privateChatsQuery.
+		Prefix("(").Suffix(") UNION ALL (").SuffixExpr(groupChatsQuery).Suffix(")").
+		OrderBy("created_at DESC").
 		PlaceholderFormat(sq.Dollar)
 
-	sqlStr, args, err := query.ToSql()
+	sqlStr, args, err := finalQuery.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
 	}

@@ -73,12 +73,13 @@ func (s *Server) GetChats(ctx context.Context, _ *chat.ChatEmpty) (*chat.GetChat
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("GetChats")
 
-	uuid, ok := ctx.Value(config.KeyUUID).(string)
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
 	if !ok {
-		return nil, fmt.Errorf("failed to find uuid")
+		logger.Error("failed to find userUUID")
+		return nil, fmt.Errorf("failed to find userUUID")
 	}
 
-	chats, err := s.repository.GetChats(uuid)
+	chats, err := s.repository.GetChats(userUUID)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to get chats: %v", err))
 		return nil, fmt.Errorf("failed to get chats: %v", err)

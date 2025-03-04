@@ -81,18 +81,18 @@ func (mr *MockDBRepoMockRecorder) EditMessage(messageID, newContent interface{})
 }
 
 // GetChats mocks base method.
-func (m *MockDBRepo) GetChats(UUID string) (*model.ChatInfoList, error) {
+func (m *MockDBRepo) GetChats(userUUID string) (*model.ChatInfoList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetChats", UUID)
+	ret := m.ctrl.Call(m, "GetChats", userUUID)
 	ret0, _ := ret[0].(*model.ChatInfoList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetChats indicates an expected call of GetChats.
-func (mr *MockDBRepoMockRecorder) GetChats(UUID interface{}) *gomock.Call {
+func (mr *MockDBRepoMockRecorder) GetChats(userUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChats", reflect.TypeOf((*MockDBRepo)(nil).GetChats), UUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChats", reflect.TypeOf((*MockDBRepo)(nil).GetChats), userUUID)
 }
 
 // GetPrivateRecentMessages mocks base method.
