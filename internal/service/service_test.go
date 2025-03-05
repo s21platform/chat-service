@@ -221,3 +221,60 @@ func TestServer_GetPrivateRecentMessages(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to fetch chat")
 	})
 }
+
+func TestServer_EditPrivateMessage(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockUserClient := NewMockUserClient(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	messageUUID := uuid.New()
+	newContent := "this is the new content"
+	updateAt := time.Now()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+	s := New(mockRepo, mockUserClient)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
+
+		expectedEditMessage := &model.EditedPrivateMessage{
+			MessageUUID: messageUUID,
+			Content:     newContent,
+			UpdateAt:    updateAt,
+		}
+
+		mockRepo.EXPECT().EditPrivateMessage(messageUUID.String(), newContent).
+			Return(expectedEditMessage, nil)
+
+		message, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
+			UuidMessage: messageUUID.String(),
+			NewContent:  newContent,
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, message)
+	})
+
+	t.Run("DB_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockRepo.EXPECT().EditPrivateMessage(gomock.Any(), gomock.Any()).
+			Return(nil, fmt.Errorf("failed to edit private message"))
+
+		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
+			UuidMessage: messageUUID.String(),
+			NewContent:  newContent,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to edit private message")
+	})
+}

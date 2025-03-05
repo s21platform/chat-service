@@ -122,7 +122,7 @@ func (s *Server) EditPrivateMessage(ctx context.Context, in *chat.EditPrivateMes
 	}
 
 	return &chat.EditPrivateMessageOut{
-		UuidMessage: data.MessageID.String(),
+		UuidMessage: data.MessageUUID.String(),
 		NewContent:  data.Content,
 		UpdatedAt:   data.UpdateAt.Format(time.RFC3339),
 	}, nil
