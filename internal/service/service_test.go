@@ -221,3 +221,75 @@ func TestServer_GetPrivateRecentMessages(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to fetch chat")
 	})
 }
+
+func TestServer_GetChats(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockUserClient := NewMockUserClient(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	userUUID := uuid.New().String()
+	expectedTime := time.Now()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
+
+	s := New(mockRepo, mockUserClient)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetChats")
+
+		expectedChats := &model.ChatInfoList{
+			{
+				LastMessage:          "How are you?",
+				ChatName:             "",
+				AvatarURL:            "",
+				LastMessageTimestamp: &expectedTime,
+				ChatUUID:             uuid.New().String(),
+			},
+			{
+				LastMessage:          "Hello!",
+				ChatName:             "Group chat name",
+				AvatarURL:            "standart link",
+				LastMessageTimestamp: &expectedTime,
+				ChatUUID:             uuid.New().String(),
+			},
+		}
+		mockRepo.EXPECT().GetChats(userUUID).Return(expectedChats, nil)
+
+		chats, err := s.GetChats(ctx, &chat.ChatEmpty{})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, chats)
+		assert.Len(t, chats.Chats, 2)
+	})
+
+	t.Run("no_userUUID", func(t *testing.T) {
+		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
+
+		mockLogger.EXPECT().AddFuncName("GetChats")
+		mockLogger.EXPECT().Error("failed to find userUUID")
+
+		_, err := s.GetChats(badCtx, &chat.ChatEmpty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to find userUUID")
+	})
+
+	t.Run("DB_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetChats")
+
+		mockLogger.EXPECT().Error(gomock.Any())
+		mockRepo.EXPECT().GetChats(userUUID).Return(nil, fmt.Errorf("failed to get chats"))
+
+		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get chats")
+	})
+}
