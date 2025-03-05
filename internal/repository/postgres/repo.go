@@ -137,27 +137,27 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) 
 	return &messages, nil
 }
 
-func (r *Repository) EditMessage(messageID string, newContent string) (*model.EditedMessage, error) {
-	var editedMessage model.EditedMessage
+func (r *Repository) EditPrivateMessage(messageUUID string, newContent string) (*model.EditedPrivateMessage, error) {
+	var editedPrivateMessage model.EditedPrivateMessage
 
 	query := sq.Update("messages").
 		Set("content", newContent).
-		Set("edited_at", sq.Expr("CURRENT_TIMESTAMP")).
-		Where(sq.Eq{"id": messageID}).
-		Suffix("RETURNING id, content").
+		Set("updated_at", sq.Expr("CURRENT_TIMESTAMP")).
+		Where(sq.Eq{"uuid": messageUUID}).
+		Suffix("RETURNING uuid, content, updated_at").
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("failed to build EditMessage query: %v", err)
+		return nil, fmt.Errorf("failed to build EditPrivateMessage query: %v", err)
 	}
 
-	err = r.connection.Get(&editedMessage, sqlStr, args...)
+	err = r.connection.Get(&editedPrivateMessage, sqlStr, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to edit message in db: %v", err)
+		return nil, fmt.Errorf("failed to edit private message in db: %v", err)
 	}
 
-	return &editedMessage, nil
+	return &editedPrivateMessage, nil
 }
 
 func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {

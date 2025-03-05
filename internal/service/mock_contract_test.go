@@ -65,19 +65,19 @@ func (mr *MockDBRepoMockRecorder) DeleteMessage(messageID, mode interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMessage", reflect.TypeOf((*MockDBRepo)(nil).DeleteMessage), messageID, mode)
 }
 
-// EditMessage mocks base method.
-func (m *MockDBRepo) EditMessage(messageID, newContent string) (*model.EditedMessage, error) {
+// EditPrivateMessage mocks base method.
+func (m *MockDBRepo) EditPrivateMessage(messageUUID, newContent string) (*model.EditedPrivateMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EditMessage", messageID, newContent)
-	ret0, _ := ret[0].(*model.EditedMessage)
+	ret := m.ctrl.Call(m, "EditPrivateMessage", messageUUID, newContent)
+	ret0, _ := ret[0].(*model.EditedPrivateMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// EditMessage indicates an expected call of EditMessage.
-func (mr *MockDBRepoMockRecorder) EditMessage(messageID, newContent interface{}) *gomock.Call {
+// EditPrivateMessage indicates an expected call of EditPrivateMessage.
+func (mr *MockDBRepoMockRecorder) EditPrivateMessage(messageUUID, newContent interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditMessage", reflect.TypeOf((*MockDBRepo)(nil).EditMessage), messageID, newContent)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditPrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).EditPrivateMessage), messageUUID, newContent)
 }
 
 // GetChats mocks base method.

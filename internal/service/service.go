@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
@@ -110,19 +111,20 @@ func (s *Server) GetPrivateRecentMessages(ctx context.Context, in *chat.GetPriva
 	}, nil
 }
 
-func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat.EditMessageOut, error) {
+func (s *Server) EditPrivateMessage(ctx context.Context, in *chat.EditPrivateMessageIn) (*chat.EditPrivateMessageOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("EditMessage")
+	logger.AddFuncName("EditPrivateMessage")
 
-	data, err := s.repository.EditMessage(in.UuidMessage, in.NewContent)
+	data, err := s.repository.EditPrivateMessage(in.UuidMessage, in.NewContent)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to edit message: %v", err))
-		return nil, fmt.Errorf("failed to edit message: %v", err)
+		logger.Error(fmt.Sprintf("failed to edit private message: %v", err))
+		return nil, fmt.Errorf("failed to edit private message: %v", err)
 	}
 
-	return &chat.EditMessageOut{
+	return &chat.EditPrivateMessageOut{
 		UuidMessage: data.MessageID.String(),
 		NewContent:  data.Content,
+		UpdatedAt:   time.Now().String(),
 	}, nil
 }
 
