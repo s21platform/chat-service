@@ -8,11 +8,13 @@ import (
 )
 
 type DBRepo interface {
-	CreatePrivateChat(initiator *model.ChatMemberParams, companion *model.ChatMemberParams) (string, error)
+	CreatePrivateChat(initiator, companion *model.ChatMemberParams) (string, error)
 	GetChats(UUID string) (*model.ChatInfoList, error)
-	GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error)
-	DeleteMessage(messageID string, mode string) (bool, error)
-	EditMessage(messageID string, newContent string) (*model.EditedMessage, error)
+	GetPrivateRecentMessages(chatUUID, userUUID string) (*model.MessageList, error)
+
+	EditMessage(messageID, newContent string) (*model.EditedMessage, error)
+	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
+	DeletePrivateMessage(userUUID, messageID, mode string) (bool, error)
 }
 
 type UserClient interface {

@@ -160,15 +160,37 @@ func (r *Repository) EditMessage(messageID string, newContent string) (*model.Ed
 	return &editedMessage, nil
 }
 
-func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
+func (r *Repository) GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error) {
+	var deletionInfo model.DeletionInfo
+
+	query := sq.Select("delete_format", "deleted_by", "deleted_at").
+		From("messages").
+		Where(sq.Eq{"id": messageID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetPrivateDeletionInfo query: %v", err)
+	}
+
+	err = r.connection.Select(&deletionInfo, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get deletion info from db: %v", err)
+	}
+
+	return &deletionInfo, nil
+}
+
+func (r *Repository) DeletePrivateMessage(userUUID, messageID, mode string) (bool, error) {
 	query := sq.Update("messages").
+		Set("deleted_by", userUUID).
 		Set("deleted_for", mode).
 		Where(sq.Eq{"id": messageID}).
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
 	if err != nil {
-		return false, fmt.Errorf("failed to build DeleteMessage query: %v", err)
+		return false, fmt.Errorf("failed to build DeletePrivateMessage query: %v", err)
 	}
 
 	_, err = r.connection.Exec(sqlStr, args...)
