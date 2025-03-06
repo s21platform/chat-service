@@ -244,7 +244,7 @@ func TestServer_GetChats(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetChats")
 
-		expectedChats := &model.ChatInfoList{
+		expPrivateChats := &model.ChatInfoList{
 			{
 				LastMessage:          "How are you?",
 				ChatName:             "",
@@ -252,6 +252,9 @@ func TestServer_GetChats(t *testing.T) {
 				LastMessageTimestamp: &expectedTime,
 				ChatUUID:             uuid.New().String(),
 			},
+		}
+
+		expGroupChats := &model.ChatInfoList{
 			{
 				LastMessage:          "Hello!",
 				ChatName:             "Group chat name",
@@ -260,7 +263,9 @@ func TestServer_GetChats(t *testing.T) {
 				ChatUUID:             uuid.New().String(),
 			},
 		}
-		mockRepo.EXPECT().GetChats(userUUID).Return(expectedChats, nil)
+
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(expPrivateChats, nil)
+		mockRepo.EXPECT().GetGroupChats(userUUID).Return(expGroupChats, nil)
 
 		chats, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
@@ -281,15 +286,28 @@ func TestServer_GetChats(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to find userUUID")
 	})
 
-	t.Run("DB_error", func(t *testing.T) {
+	t.Run("DB_private_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetChats")
 
 		mockLogger.EXPECT().Error(gomock.Any())
-		mockRepo.EXPECT().GetChats(userUUID).Return(nil, fmt.Errorf("failed to get chats"))
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(nil, fmt.Errorf("failed to private get chats"))
 
 		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get chats")
+		assert.Contains(t, err.Error(), "failed to private get chats")
+	})
+
+	t.Run("DB_group_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetChats")
+
+		mockLogger.EXPECT().Error(gomock.Any())
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(&model.ChatInfoList{}, nil)
+		mockRepo.EXPECT().GetGroupChats(userUUID).Return(nil, fmt.Errorf("failed to group chats"))
+
+		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get group chats")
 	})
 }

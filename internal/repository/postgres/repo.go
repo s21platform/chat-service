@@ -69,22 +69,39 @@ func (r *Repository) CreatePrivateChat(initiator *model.ChatMemberParams, compan
 	return chatUUID, nil
 }
 
-func (r *Repository) GetChats(userUUID string) (*model.ChatInfoList, error) {
+func (r *Repository) GetPrivateChats(userUUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
-	privateChatsQuery := sq.Select(
+	query := sq.Select(
 		"c.uuid",
 		"c.created_at",
 		"COALESCE(m.content, '') AS content",
-		"COALESCE(NULL, '') AS chat_name",
-		"COALESCE(NULL, '') AS avatar_link",
+		"'' AS chat_name",
+		"'' AS avatar_link",
 	).
 		From("chats_user cu").
 		Join("chats c ON c.uuid = cu.chat_uuid").
 		LeftJoin("messages m ON c.uuid = m.chat_uuid AND m.sent_at = (SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid)").
-		Where(sq.Eq{"cu.user_uuid": userUUID})
+		Where(sq.Eq{"cu.user_uuid": userUUID}).
+		PlaceholderFormat(sq.Dollar)
 
-	groupChatsQuery := sq.Select(
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetPrivateChats query: %v", err)
+	}
+
+	err = r.connection.Select(&chats, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get private chats from db: %v", err)
+	}
+
+	return &chats, nil
+}
+
+func (r *Repository) GetGroupChats(userUUID string) (*model.ChatInfoList, error) {
+	var chats model.ChatInfoList
+
+	query := sq.Select(
 		"gc.uuid",
 		"gc.created_at",
 		"COALESCE(gm.content, '') AS content",
@@ -94,14 +111,10 @@ func (r *Repository) GetChats(userUUID string) (*model.ChatInfoList, error) {
 		From("group_chats_user gcu").
 		Join("group_chats gc ON gc.uuid = gcu.chat_uuid").
 		LeftJoin("group_messages gm ON gc.uuid = gm.chat_uuid AND gm.sent_at = (SELECT MAX(sent_at) FROM group_messages WHERE chat_uuid = gc.uuid)").
-		Where(sq.Eq{"gcu.user_uuid": userUUID})
-
-	finalQuery := privateChatsQuery.
-		Prefix("(").Suffix(") UNION ALL (").SuffixExpr(groupChatsQuery).Suffix(")").
-		OrderBy("created_at DESC").
+		Where(sq.Eq{"gcu.user_uuid": userUUID}).
 		PlaceholderFormat(sq.Dollar)
 
-	sqlStr, args, err := finalQuery.ToSql()
+	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
 	}

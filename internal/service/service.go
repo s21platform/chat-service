@@ -79,14 +79,22 @@ func (s *Server) GetChats(ctx context.Context, _ *chat.ChatEmpty) (*chat.GetChat
 		return nil, fmt.Errorf("failed to find userUUID")
 	}
 
-	chats, err := s.repository.GetChats(userUUID)
+	privateChats, err := s.repository.GetPrivateChats(userUUID)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get chats: %v", err))
-		return nil, fmt.Errorf("failed to get chats: %v", err)
+		logger.Error(fmt.Sprintf("failed to get private chats: %v", err))
+		return nil, fmt.Errorf("failed to get private chats: %v", err)
 	}
 
+	groupChats, err := s.repository.GetGroupChats(userUUID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get group chats: %v", err))
+		return nil, fmt.Errorf("failed to get group chats: %v", err)
+	}
+
+	allChats := append(*privateChats, *groupChats...)
+
 	return &chat.GetChatsOut{
-		Chats: chats.FromDTO(),
+		Chats: allChats.FromDTO(),
 	}, nil
 }
 
