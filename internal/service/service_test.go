@@ -40,14 +40,14 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
 
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.UserInfo{
-				UserName:   "test_initiator",
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_initiator",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(&model.UserInfo{
-				UserName:   "test_companion",
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_companion",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
@@ -97,8 +97,8 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		mockLogger.EXPECT().Error(gomock.Any())
 
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.UserInfo{
-				UserName:   "test_initiator",
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_initiator",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
@@ -118,14 +118,14 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 		mockLogger.EXPECT().Error(gomock.Any())
 
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.UserInfo{
-				UserName:   "test_initiator",
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_initiator",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
 		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(&model.UserInfo{
-				UserName:   "test_companion",
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_companion",
 				AvatarLink: "test_avatar_link",
 			}, nil)
 

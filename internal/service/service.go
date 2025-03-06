@@ -48,14 +48,14 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 	}
 
 	initiatorParams := &model.ChatMemberParams{
-		UserID:     initiatorID,
-		Nickname:   initiatorSetup.UserName,
+		UserUUID:   initiatorID,
+		Nickname:   initiatorSetup.Nickname,
 		AvatarLink: initiatorSetup.AvatarLink,
 	}
 
 	companionParams := &model.ChatMemberParams{
-		UserID:     in.CompanionUuid,
-		Nickname:   companionSetup.UserName,
+		UserUUID:   in.CompanionUuid,
+		Nickname:   companionSetup.Nickname,
 		AvatarLink: companionSetup.AvatarLink,
 	}
 

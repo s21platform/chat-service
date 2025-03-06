@@ -16,5 +16,5 @@ type DBRepo interface {
 }
 
 type UserClient interface {
-	GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error)
+	GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error)
 }

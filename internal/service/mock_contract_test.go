@@ -134,10 +134,10 @@ func (m *MockUserClient) EXPECT() *MockUserClientMockRecorder {
 }
 
 // GetUserInfoByUUID mocks base method.
-func (m *MockUserClient) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
+func (m *MockUserClient) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserInfoByUUID", ctx, userUUID)
-	ret0, _ := ret[0].(*model.UserInfo)
+	ret0, _ := ret[0].(*model.ChatMemberParams)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

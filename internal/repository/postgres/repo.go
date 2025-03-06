@@ -11,12 +11,6 @@ import (
 	"github.com/s21platform/chat-service/internal/model"
 )
 
-//const (
-//	//TODO: убрать после добавления kafka-consumer-avatar
-//	defaultAvatar = "https://storage.yandexcloud.net/space21/avatars/default/logo-discord.jpeg"
-//	typePrivate   = "private"
-//)
-
 type Repository struct {
 	connection *sqlx.DB
 }
@@ -52,8 +46,8 @@ func (r *Repository) CreatePrivateChat(initiator *model.ChatMemberParams, compan
 
 	query := sq.Insert("chats_user").
 		Columns("chat_uuid", "user_uuid", "username", "avatar_link").
-		Values(chatUUID, initiator.UserID, initiator.Nickname, initiator.AvatarLink).
-		Values(chatUUID, companion.UserID, companion.Nickname, companion.AvatarLink).
+		Values(chatUUID, initiator.UserUUID, initiator.Nickname, initiator.AvatarLink).
+		Values(chatUUID, companion.UserUUID, companion.Nickname, companion.AvatarLink).
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
