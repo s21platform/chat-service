@@ -13,6 +13,7 @@ type DBRepo interface {
 	GetPrivateRecentMessages(chatUUID, userUUID string) (*model.MessageList, error)
 
 	EditMessage(messageID, newContent string) (*model.EditedMessage, error)
+	IsChatMember(chatUUID, userUUID string) (bool, error)
 	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
 	DeletePrivateMessage(userUUID, messageID, mode string) (bool, error)
 }
