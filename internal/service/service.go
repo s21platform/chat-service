@@ -110,37 +110,70 @@ func (s *Server) GetPrivateRecentMessages(ctx context.Context, in *chat.GetPriva
 	}, nil
 }
 
-func (s *Server) EditMessage(ctx context.Context, in *chat.EditMessageIn) (*chat.EditMessageOut, error) {
+func (s *Server) EditMessage(ctx context.Context, in *chat.EditPrivateMessageIn) (*chat.EditPrivateMessageOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
 	logger.AddFuncName("EditMessage")
 
-	data, err := s.repository.EditMessage(in.UuidMessage, in.NewContent)
+	data, err := s.repository.EditMessage(in.MessageUuid, in.NewContent)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to edit message: %v", err))
 		return nil, fmt.Errorf("failed to edit message: %v", err)
 	}
 
-	return &chat.EditMessageOut{
-		UuidMessage: data.MessageID.String(),
+	return &chat.EditPrivateMessageOut{
+		MessageUuid: data.MessageID.String(),
 		NewContent:  data.Content,
 	}, nil
 }
 
-func (s *Server) DeleteMessage(ctx context.Context, in *chat.DeleteMessageIn) (*chat.DeleteMessageOut, error) {
+func (s *Server) DeletePrivateMessage(ctx context.Context, in *chat.DeletePrivateMessageIn) (*chat.DeletePrivateMessageOut, error) {
 	logger := logger_lib.FromContext(ctx, config.KeyLogger)
-	logger.AddFuncName("DeleteMessage")
+	logger.AddFuncName("DeletePrivateMessage")
+
+	userUUID, ok := ctx.Value(config.KeyUUID).(string)
+	if !ok {
+		logger.Error("failed to find uuid")
+		return nil, fmt.Errorf("failed to find uuid")
+	}
+
+	userIsChatMember, err := s.repository.IsChatMember(in.ChatUuid, userUUID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check if user is chat member: %v", err))
+		return nil, fmt.Errorf("failed to check if user is chat member: %v", err)
+	}
+
+	if !userIsChatMember {
+		logger.Error("failed to user is not chat member")
+		return nil, fmt.Errorf("failed to user is not chat member")
+	}
 
 	if in.Mode != model.Self && in.Mode != model.All {
-		return nil, fmt.Errorf("invalid mode: %s", in.Mode)
+		logger.Error(fmt.Sprintf("failed to invalid mode: %s", in.Mode))
+		return nil, fmt.Errorf("failed to invalid mode: %s", in.Mode)
 	}
 
-	isDeleted, err := s.repository.DeleteMessage(in.UuidMessage, in.Mode)
+	deletionInfo, err := s.repository.GetPrivateDeletionInfo(in.MessageUuid)
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to delete message: %v", err))
-		return nil, fmt.Errorf("failed to delete message: %v", err)
+		logger.Error(fmt.Sprintf("failed to get private message deletion info: %v", err))
+		return nil, fmt.Errorf("failed to get private message deletion info: %v", err)
 	}
 
-	return &chat.DeleteMessageOut{
+	if (deletionInfo.DeleteFormat == model.All) || (deletionInfo.DeleteFormat == model.Self && deletionInfo.DeletedBy == userUUID) {
+		logger.Error("failed to message is already deleted")
+		return nil, fmt.Errorf("failed to message is already deleted")
+	}
+
+	if deletionInfo.DeleteFormat == model.Self && deletionInfo.DeletedBy != userUUID {
+		in.Mode = model.All
+	}
+
+	isDeleted, err := s.repository.DeletePrivateMessage(userUUID, in.MessageUuid, in.Mode)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to delete private message: %v", err))
+		return nil, fmt.Errorf("failed to delete private message: %v", err)
+	}
+
+	return &chat.DeletePrivateMessageOut{
 		DeletionStatus: isDeleted,
 	}, nil
 }

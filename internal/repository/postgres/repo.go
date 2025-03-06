@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -160,15 +162,65 @@ func (r *Repository) EditMessage(messageID string, newContent string) (*model.Ed
 	return &editedMessage, nil
 }
 
-func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
-	query := sq.Update("messages").
-		Set("deleted_for", mode).
-		Where(sq.Eq{"id": messageID}).
+func (r *Repository) IsChatMember(chatUUID, userUUID string) (bool, error) {
+	query := sq.
+		Select("COUNT(*) > 0").
+		From("chats_user").
+		Where(sq.And{
+			sq.Eq{"chat_uuid": chatUUID},
+			sq.Eq{"user_uuid": userUUID},
+		}).
+		PlaceholderFormat(sq.Dollar)
+
+	var isMember bool
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build IsChatMember query: %v", err)
+	}
+
+	err = r.connection.Get(&isMember, sqlStr, args...)
+	if err != nil {
+		return false, fmt.Errorf("failed to check user membership in db: %v", err)
+	}
+
+	return isMember, nil
+}
+
+func (r *Repository) GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error) {
+	var deletionInfo model.DeletionInfo
+
+	query := sq.Select(
+		"COALESCE(delete_format::text, '') AS delete_format",
+		"COALESCE(deleted_by::text, '') AS deleted_by",
+		"COALESCE(to_char(deleted_at, 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), '') AS deleted_at").
+		From("messages").
+		Where(sq.Eq{"uuid": messageID}).
 		PlaceholderFormat(sq.Dollar)
 
 	sqlStr, args, err := query.ToSql()
 	if err != nil {
-		return false, fmt.Errorf("failed to build DeleteMessage query: %v", err)
+		return nil, fmt.Errorf("failed to build GetPrivateDeletionInfo query: %v", err)
+	}
+
+	err = r.connection.Get(&deletionInfo, sqlStr, args...)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to get deletion info from db: %v", err)
+	}
+
+	return &deletionInfo, nil
+}
+
+func (r *Repository) DeletePrivateMessage(userUUID, messageID, mode string) (bool, error) {
+	query := sq.Update("messages").
+		Set("deleted_by", userUUID).
+		Set("delete_format", mode).
+		Set("deleted_at", sq.Expr("CURRENT_TIMESTAMP")).
+		Where(sq.Eq{"uuid": messageID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build DeletePrivateMessage query: %v", err)
 	}
 
 	_, err = r.connection.Exec(sqlStr, args...)
