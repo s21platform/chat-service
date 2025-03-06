@@ -233,7 +233,7 @@ func TestServer_GetChats(t *testing.T) {
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 	userUUID := uuid.New().String()
-	expectedTime := time.Now()
+	expectedLastMessageTime := time.Now()
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
@@ -247,9 +247,9 @@ func TestServer_GetChats(t *testing.T) {
 		expPrivateChats := &model.ChatInfoList{
 			{
 				LastMessage:          "How are you?",
-				ChatName:             "",
-				AvatarURL:            "",
-				LastMessageTimestamp: &expectedTime,
+				ChatName:             "Private chat name",
+				AvatarURL:            "standart avatar url",
+				LastMessageTimestamp: &expectedLastMessageTime,
 				ChatUUID:             uuid.New().String(),
 			},
 		}
@@ -258,8 +258,8 @@ func TestServer_GetChats(t *testing.T) {
 			{
 				LastMessage:          "Hello!",
 				ChatName:             "Group chat name",
-				AvatarURL:            "standart link",
-				LastMessageTimestamp: &expectedTime,
+				AvatarURL:            "standart avatar url",
+				LastMessageTimestamp: &expectedLastMessageTime,
 				ChatUUID:             uuid.New().String(),
 			},
 		}
@@ -287,27 +287,29 @@ func TestServer_GetChats(t *testing.T) {
 	})
 
 	t.Run("DB_private_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("GetChats")
+		expectedErr := fmt.Errorf("failed to get private chats")
 
+		mockLogger.EXPECT().AddFuncName("GetChats")
 		mockLogger.EXPECT().Error(gomock.Any())
-		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(nil, fmt.Errorf("failed to private get chats"))
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(nil, expectedErr)
 
 		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to private get chats")
+		assert.Contains(t, err.Error(), expectedErr.Error())
 	})
 
 	t.Run("DB_group_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("GetChats")
+		expectedErr := fmt.Errorf("failed to get group chats")
 
+		mockLogger.EXPECT().AddFuncName("GetChats")
 		mockLogger.EXPECT().Error(gomock.Any())
 		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(&model.ChatInfoList{}, nil)
-		mockRepo.EXPECT().GetGroupChats(userUUID).Return(nil, fmt.Errorf("failed to group chats"))
+		mockRepo.EXPECT().GetGroupChats(userUUID).Return(nil, expectedErr)
 
 		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get group chats")
+		assert.Contains(t, err.Error(), expectedErr.Error())
 	})
 }

@@ -73,11 +73,11 @@ func (r *Repository) GetPrivateChats(userUUID string) (*model.ChatInfoList, erro
 	var chats model.ChatInfoList
 
 	query := sq.Select(
-		"c.uuid",
-		"c.created_at",
 		"COALESCE(m.content, '') AS content",
-		"'' AS chat_name",
-		"'' AS avatar_link",
+		"(SELECT username FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid = $1) AS chat_name",
+		"(SELECT avatar_link FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid = $1) AS avatar_link",
+		"COALESCE((SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid), c.created_at) AS created_at",
+		"c.uuid",
 	).
 		From("chats_user cu").
 		Join("chats c ON c.uuid = cu.chat_uuid").
@@ -85,6 +85,7 @@ func (r *Repository) GetPrivateChats(userUUID string) (*model.ChatInfoList, erro
 		Where(sq.Eq{"cu.user_uuid": userUUID}).
 		PlaceholderFormat(sq.Dollar)
 
+	// Генерируем финальный SQL и список аргументов
 	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetPrivateChats query: %v", err)
@@ -102,11 +103,11 @@ func (r *Repository) GetGroupChats(userUUID string) (*model.ChatInfoList, error)
 	var chats model.ChatInfoList
 
 	query := sq.Select(
-		"gc.uuid",
-		"gc.created_at",
 		"COALESCE(gm.content, '') AS content",
 		"gc.chat_name",
 		"gc.avatar_link",
+		"COALESCE((SELECT MAX(sent_at) FROM messages WHERE chat_uuid = gc.uuid), gc.created_at) AS created_at",
+		"gc.uuid",
 	).
 		From("group_chats_user gcu").
 		Join("group_chats gc ON gc.uuid = gcu.chat_uuid").
