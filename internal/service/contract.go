@@ -12,9 +12,9 @@ type DBRepo interface {
 	GetChats(UUID string) (*model.ChatInfoList, error)
 	GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error)
 	DeleteMessage(messageID string, mode string) (bool, error)
-	EditMessage(messageID string, newContent string) (*model.EditedMessage, error)
+	EditPrivateMessage(messageUUID string, newContent string) (*model.EditedPrivateMessage, error)
 }
 
 type UserClient interface {
-	GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error)
+	GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error)
 }

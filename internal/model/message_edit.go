@@ -1,13 +1,18 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
 
-type EditMessageRequest struct {
-	MessageID uuid.UUID `db:"id"`      // uuid сообщения
-	Content   string    `db:"content"` // новый текст сообщения
+	"github.com/google/uuid"
+)
+
+type EditPrivateMessageRequest struct {
+	MessageUUID uuid.UUID `db:"uuid"`    // uuid сообщения
+	Content     string    `db:"content"` // новый текст сообщения
 }
 
-type EditedMessage struct {
-	MessageID uuid.UUID `db:"id"`      // uuid измененного сообщения
-	Content   string    `db:"content"` // новый текст сообщения
+type EditedPrivateMessage struct {
+	MessageUUID uuid.UUID `db:"uuid"`       // uuid измененного сообщения
+	Content     string    `db:"content"`    // новый текст сообщения
+	UpdateAt    time.Time `db:"updated_at"` // время обновления сообщения
 }
