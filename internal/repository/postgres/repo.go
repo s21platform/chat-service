@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -131,8 +133,56 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) 
 	return &messages, nil
 }
 
-func (r *Repository) EditPrivateMessage(messageUUID string, newContent string) (*model.EditedPrivateMessage, error) {
-	var editedPrivateMessage model.EditedPrivateMessage
+func (r *Repository) GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error) {
+	var deletionInfo model.DeletionInfo
+
+	query := sq.Select(
+		"COALESCE(delete_format::text, '') AS delete_format",
+		"COALESCE(deleted_by::text, '') AS deleted_by",
+		"COALESCE(to_char(deleted_at, 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), '') AS deleted_at").
+		From("messages").
+		Where(sq.Eq{"uuid": messageID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetPrivateDeletionInfo query: %v", err)
+	}
+
+	err = r.connection.Get(&deletionInfo, sqlStr, args...)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to get deletion info from db: %v", err)
+	}
+
+	return &deletionInfo, nil
+}
+
+func (r *Repository) IsChatMember(chatUUID, userUUID string) (bool, error) {
+	query := sq.
+		Select("COUNT(*) > 0").
+		From("chats_user").
+		Where(sq.And{
+			sq.Eq{"chat_uuid": chatUUID},
+			sq.Eq{"user_uuid": userUUID},
+		}).
+		PlaceholderFormat(sq.Dollar)
+
+	var isMember bool
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build IsChatMember query: %v", err)
+	}
+
+	err = r.connection.Get(&isMember, sqlStr, args...)
+	if err != nil {
+		return false, fmt.Errorf("failed to check user membership in db: %v", err)
+	}
+
+	return isMember, nil
+}
+
+func (r *Repository) EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error) {
+	var editedPrivateMessage model.EditedMessage
 
 	query := sq.Update("messages").
 		Set("content", newContent).
@@ -152,6 +202,30 @@ func (r *Repository) EditPrivateMessage(messageUUID string, newContent string) (
 	}
 
 	return &editedPrivateMessage, nil
+}
+
+func (r *Repository) GetPrivateMessage(messageUUID string) (*model.EditedMessage, error) {
+	var editedMessage model.EditedMessage
+
+	query := sq.Select(
+		"uuid",
+		"content",
+		"updated_at").
+		From("messages").
+		Where(sq.Eq{"uuid": messageUUID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetPrivateMessage query: %v", err)
+	}
+
+	err = r.connection.Get(&editedMessage, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get message from db: %v", err)
+	}
+
+	return &editedMessage, nil
 }
 
 func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
