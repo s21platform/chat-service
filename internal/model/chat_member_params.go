@@ -1,7 +1,7 @@
 package model
 
 type ChatMemberParams struct {
-	UserID     string
-	Nickname   string
-	AvatarLink string
+	UserUUID   string `db:"user_uuid"`
+	Nickname   string `db:"nickname"`
+	AvatarLink string `db:"avatar_link"`
 }

@@ -8,16 +8,18 @@ import (
 )
 
 type DBRepo interface {
-	CreatePrivateChat(initiator, companion *model.ChatMemberParams) (string, error)
-	GetChats(UUID string) (*model.ChatInfoList, error)
-	GetPrivateRecentMessages(chatUUID, userUUID string) (*model.MessageList, error)
-
-	EditMessage(messageID, newContent string) (*model.EditedMessage, error)
-	IsChatMember(chatUUID, userUUID string) (bool, error)
-	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
+	CreatePrivateChat() (string, error)
+	AddPrivateChatMember(chatUUID string, member *model.ChatMemberParams) error
+	GetPrivateChats(userUUID string) (*model.ChatInfoList, error)
+	GetGroupChats(userUUID string) (*model.ChatInfoList, error)
+	GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error)
 	DeletePrivateMessage(userUUID, messageID, mode string) (bool, error)
+	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
+	EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error)
+	IsChatMember(chatUUID, userUUID string) (bool, error)
+	GetPrivateMessage(messageUUID string) (*model.EditedMessage, error)
 }
 
 type UserClient interface {
-	GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error)
+	GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error)
 }
