@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -39,8 +40,8 @@ func (r *Repository) CreatePrivateChat() (string, error) {
 	var chatUUID string
 
 	query, args, err := sq.Insert("chats").
-		Columns().
-		Values().
+		Columns("created_at").
+		Values(time.Now()).
 		Suffix("RETURNING uuid").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -149,7 +150,6 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) 
 		Where(sq.Eq{"chat_uuid": chatUUID}).
 		Where(sq.Or{
 			sq.Eq{"delete_format": nil},
-			sq.NotEq{"delete_format": "all"},
 			sq.And{
 				sq.Eq{"delete_format": "self"},
 				sq.NotEq{"deleted_by": userUUID},
