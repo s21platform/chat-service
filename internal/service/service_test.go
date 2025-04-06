@@ -236,7 +236,6 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 	chatUUID := uuid.New().String()
 	messageUUID := uuid.New()
 	newContent := "this is the new content"
-	oldContent := "this is the old content"
 	updateAt := time.Now()
 
 	ctx := context.Background()
@@ -251,15 +250,8 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
 			Return(true, nil)
 
-		deletionInfo := &model.DeletionInfo{DeletedAt: ""}
+		deletionInfo := &model.DeletionInfo{}
 		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
-
-		currentMessage := &model.EditedMessage{
-			MessageUUID: messageUUID,
-			Content:     oldContent,
-			UpdateAt:    updateAt.Add(-time.Hour),
-		}
-		mockRepo.EXPECT().GetPrivateMessage(messageUUID.String()).Return(currentMessage, nil)
 
 		updatedMessage := &model.EditedMessage{
 			MessageUUID: messageUUID,
@@ -371,55 +363,6 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		assert.Contains(t, err.Error(), "attempt to edit deleted message")
 	})
 
-	t.Run("GetPrivateMessage_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().IsChatMember(gomock.Any(), gomock.Any()).
-			Return(true, nil)
-
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
-			Return(nil, nil)
-
-		mockRepo.EXPECT().GetPrivateMessage(messageUUID.String()).
-			Return(nil, fmt.Errorf("failed to get current message"))
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get current message")
-	})
-
-	t.Run("Content_not_changed", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-
-		deletionInfo := &model.DeletionInfo{DeletedAt: ""}
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
-
-		currentMessage := &model.EditedMessage{
-			MessageUUID: messageUUID,
-			Content:     newContent,
-			UpdateAt:    updateAt,
-		}
-		mockRepo.EXPECT().GetPrivateMessage(messageUUID.String()).Return(currentMessage, nil)
-		mockLogger.EXPECT().Info("content not changed, skipping update")
-
-		response, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.NoError(t, err)
-		assert.Equal(t, newContent, response.NewContent)
-	})
-
 	t.Run("DB_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
@@ -427,15 +370,9 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
 			Return(true, nil)
 
-		deletionInfo := &model.DeletionInfo{DeletedAt: ""}
+		deletionInfo := &model.DeletionInfo{}
 		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
 
-		currentMessage := &model.EditedMessage{
-			MessageUUID: messageUUID,
-			Content:     oldContent,
-			UpdateAt:    updateAt.Add(-time.Hour),
-		}
-		mockRepo.EXPECT().GetPrivateMessage(messageUUID.String()).Return(currentMessage, nil)
 		mockRepo.EXPECT().EditPrivateMessage(messageUUID.String(), newContent).Return(nil, fmt.Errorf("failed to edit private message"))
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{

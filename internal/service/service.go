@@ -139,22 +139,8 @@ func (s *Server) EditPrivateMessage(ctx context.Context, in *chat.EditPrivateMes
 	}
 
 	if isDeleted != nil && isDeleted.DeletedAt != "" {
-		logger.Error("attempt to edit deleted message")
+		logger.Error("failed to edit deleted message")
 		return nil, fmt.Errorf("attempt to edit deleted message")
-	}
-
-	currentMessage, err := s.repository.GetPrivateMessage(in.MessageUuid)
-	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get current message: %v", err))
-		return nil, fmt.Errorf("failed to get current message: %v", err)
-	}
-
-	if currentMessage.Content == in.NewContent {
-		logger.Info("content not changed, skipping update")
-		return &chat.EditPrivateMessageOut{
-			MessageUuid: in.MessageUuid,
-			NewContent:  currentMessage.Content,
-			UpdatedAt:   currentMessage.UpdateAt.Format(time.RFC3339)}, nil
 	}
 
 	data, err := s.repository.EditPrivateMessage(in.MessageUuid, in.NewContent)

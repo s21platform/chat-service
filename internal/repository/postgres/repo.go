@@ -35,40 +35,51 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreatePrivateChat(initiator *model.ChatMemberParams, companion *model.ChatMemberParams) (string, error) {
+func (r *Repository) CreatePrivateChat() (string, error) {
 	var chatUUID string
 
-	//TODO: сделать через Squirrel
-	sqlStr := "INSERT INTO chats DEFAULT VALUES RETURNING uuid"
+	query, args, err := sq.Insert("chats").
+		Columns().
+		Values().
+		Suffix("RETURNING uuid").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	err := r.connection.QueryRow(sqlStr).Scan(&chatUUID)
+	if err != nil {
+		return "", fmt.Errorf("failed to build insert query: %v", err)
+	}
+
+	err = r.connection.Get(&chatUUID, query, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to create chat in db: %v", err)
-	}
-
-	query := sq.Insert("chats_user").
-		Columns("chat_uuid", "user_uuid", "username", "avatar_link").
-		Values(chatUUID, initiator.UserUUID, initiator.Nickname, initiator.AvatarLink).
-		Values(chatUUID, companion.UserUUID, companion.Nickname, companion.AvatarLink).
-		PlaceholderFormat(sq.Dollar)
-
-	sqlStr, args, err := query.ToSql()
-	if err != nil {
-		return "", fmt.Errorf("failed to build chat_members insert query: %v", err)
-	}
-
-	_, err = r.connection.Exec(sqlStr, args...)
-	if err != nil {
-		return "", fmt.Errorf("failed to insert chat members in db: %v", err)
 	}
 
 	return chatUUID, nil
 }
 
+func (r *Repository) AddPrivateChatMember(chatUUID string, member *model.ChatMemberParams) error {
+	query, args, err := sq.Insert("chats_user").
+		Columns("chat_uuid", "user_uuid", "username", "avatar_link").
+		Values(chatUUID, member.UserUUID, member.Nickname, member.AvatarLink).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return fmt.Errorf("failed to build chat_members insert query: %v", err)
+	}
+
+	_, err = r.connection.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to insert chat members in db: %v", err)
+	}
+
+	return nil
+}
+
 func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
-	query := sq.Select(
+	query, args, err := sq.Select(
 		"COALESCE(m.content, '') AS content",
 		"c.chat_name",
 		"c.avatar_link",
@@ -80,14 +91,14 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 		LeftJoin("public.messages m ON c.last_message_id = m.id").
 		Where(sq.Eq{"cm.user_uuid": UUID}).
 		OrderBy("m.created_at DESC").
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
 	}
 
-	err = r.connection.Select(&chats, sqlStr, args...)
+	err = r.connection.Select(&chats, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chats from db: %v", err)
 	}
@@ -98,7 +109,7 @@ func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
 func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error) {
 	var messages model.MessageList
 
-	query := sq.Select(
+	query, args, err := sq.Select(
 		"sender_uuid",
 		"content",
 		"sent_at",
@@ -118,14 +129,14 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) 
 		}).
 		OrderBy("sent_at DESC").
 		Limit(15).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetRecentMessages query: %v", err)
 	}
 
-	err = r.connection.Select(&messages, sqlStr, args...)
+	err = r.connection.Select(&messages, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages from db: %v", err)
 	}
@@ -136,20 +147,20 @@ func (r *Repository) GetPrivateRecentMessages(chatUUID string, userUUID string) 
 func (r *Repository) GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error) {
 	var deletionInfo model.DeletionInfo
 
-	query := sq.Select(
+	query, args, err := sq.Select(
 		"COALESCE(delete_format::text, '') AS delete_format",
 		"COALESCE(deleted_by::text, '') AS deleted_by",
 		"COALESCE(to_char(deleted_at, 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), '') AS deleted_at").
 		From("messages").
 		Where(sq.Eq{"uuid": messageID}).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetPrivateDeletionInfo query: %v", err)
 	}
 
-	err = r.connection.Get(&deletionInfo, sqlStr, args...)
+	err = r.connection.Get(&deletionInfo, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("failed to get deletion info from db: %v", err)
 	}
@@ -158,22 +169,23 @@ func (r *Repository) GetPrivateDeletionInfo(messageID string) (*model.DeletionIn
 }
 
 func (r *Repository) IsChatMember(chatUUID, userUUID string) (bool, error) {
-	query := sq.
+	var isMember bool
+
+	query, args, err := sq.
 		Select("COUNT(*) > 0").
 		From("chats_user").
 		Where(sq.And{
 			sq.Eq{"chat_uuid": chatUUID},
 			sq.Eq{"user_uuid": userUUID},
 		}).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	var isMember bool
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return false, fmt.Errorf("failed to build IsChatMember query: %v", err)
 	}
 
-	err = r.connection.Get(&isMember, sqlStr, args...)
+	err = r.connection.Get(&isMember, query, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to check user membership in db: %v", err)
 	}
@@ -184,19 +196,19 @@ func (r *Repository) IsChatMember(chatUUID, userUUID string) (bool, error) {
 func (r *Repository) EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error) {
 	var editedPrivateMessage model.EditedMessage
 
-	query := sq.Update("messages").
+	query, args, err := sq.Update("messages").
 		Set("content", newContent).
 		Set("updated_at", sq.Expr("CURRENT_TIMESTAMP")).
 		Where(sq.Eq{"uuid": messageUUID}).
 		Suffix("RETURNING uuid, content, updated_at").
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build EditPrivateMessage query: %v", err)
 	}
 
-	err = r.connection.Get(&editedPrivateMessage, sqlStr, args...)
+	err = r.connection.Get(&editedPrivateMessage, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to edit private message in db: %v", err)
 	}
@@ -207,20 +219,20 @@ func (r *Repository) EditPrivateMessage(messageUUID string, newContent string) (
 func (r *Repository) GetPrivateMessage(messageUUID string) (*model.EditedMessage, error) {
 	var editedMessage model.EditedMessage
 
-	query := sq.Select(
+	query, args, err := sq.Select(
 		"uuid",
 		"content",
 		"updated_at").
 		From("messages").
 		Where(sq.Eq{"uuid": messageUUID}).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetPrivateMessage query: %v", err)
 	}
 
-	err = r.connection.Get(&editedMessage, sqlStr, args...)
+	err = r.connection.Get(&editedMessage, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get message from db: %v", err)
 	}
@@ -229,17 +241,17 @@ func (r *Repository) GetPrivateMessage(messageUUID string) (*model.EditedMessage
 }
 
 func (r *Repository) DeleteMessage(messageID string, mode string) (bool, error) {
-	query := sq.Update("messages").
+	query, args, err := sq.Update("messages").
 		Set("deleted_for", mode).
 		Where(sq.Eq{"id": messageID}).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return false, fmt.Errorf("failed to build DeleteMessage query: %v", err)
 	}
 
-	_, err = r.connection.Exec(sqlStr, args...)
+	_, err = r.connection.Exec(query, args...)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete message in db: %v", err)
 	}
