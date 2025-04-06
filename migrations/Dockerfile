@@ -5,7 +5,7 @@ FROM golang:1.22-alpine
 RUN apk add --no-cache bash gcc musl-dev postgresql-dev
 
 # Установим Goose
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go install github.com/pressly/goose/v3/cmd/goose@v3.20.0
 
 # Создадим рабочую директорию
 WORKDIR /app

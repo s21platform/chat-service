@@ -32,7 +32,7 @@ func NewService(cfg *config.Config) *Service {
 	return &Service{client: client}
 }
 
-func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.UserInfo, error) {
+func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error) {
 	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("uuid", userUUID))
 
 	resp, err := s.client.GetUserInfoByUUID(ctx, &userproto.GetUserInfoByUUIDIn{Uuid: userUUID})
@@ -40,8 +40,9 @@ func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*mode
 		return nil, fmt.Errorf("failed to get user info from user-service: %v", err)
 	}
 
-	return &model.UserInfo{
-		UserName:   resp.Nickname,
+	return &model.ChatMemberParams{
+		UserUUID:   userUUID,
+		Nickname:   resp.Nickname,
 		AvatarLink: resp.Avatar,
 	}, nil
 }
