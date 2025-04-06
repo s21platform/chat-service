@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/s21platform/chat-service/internal/client/user"
 	"net"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
@@ -11,6 +10,7 @@ import (
 	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 
+	"github.com/s21platform/chat-service/internal/client/user"
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/infra"
 	db "github.com/s21platform/chat-service/internal/repository/postgres"

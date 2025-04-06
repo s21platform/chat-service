@@ -51,8 +51,12 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().CreatePrivateChat().
 			Return("chat_uuid", nil)
+		mockRepo.EXPECT().AddPrivateChatMember(gomock.Any(), gomock.Any()).
+			Return(nil)
+		mockRepo.EXPECT().AddPrivateChatMember(gomock.Any(), gomock.Any()).
+			Return(nil)
 
 		chatUUID, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
 			CompanionUuid: companionUUID,
@@ -129,7 +133,7 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().CreatePrivateChat().
 			Return("", fmt.Errorf("failed to create chat"))
 
 		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
@@ -138,6 +142,69 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to create chat")
+	})
+
+	t.Run("add_initiator_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_initiator",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_companion",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockRepo.EXPECT().CreatePrivateChat().
+			Return("chat_uuid", nil)
+
+		mockRepo.EXPECT().AddPrivateChatMember("chat_uuid", gomock.Any()).
+			Return(fmt.Errorf("failed to add initiator"))
+
+		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to add initiator")
+	})
+
+	t.Run("add_companion_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_initiator",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.ChatMemberParams{
+				Nickname:   "test_companion",
+				AvatarLink: "test_avatar_link",
+			}, nil)
+
+		mockRepo.EXPECT().CreatePrivateChat().
+			Return("chat_uuid", nil)
+
+		mockRepo.EXPECT().AddPrivateChatMember("chat_uuid", gomock.Any()).
+			Return(nil)
+
+		mockRepo.EXPECT().AddPrivateChatMember("chat_uuid", gomock.Any()).
+			Return(fmt.Errorf("failed to add companion"))
+
+		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
+			CompanionUuid: companionUUID,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to add companion")
 	})
 }
 

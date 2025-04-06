@@ -59,10 +59,22 @@ func (s *Server) CreatePrivateChat(ctx context.Context, in *chat.CreatePrivateCh
 		AvatarLink: companionSetup.AvatarLink,
 	}
 
-	chatUUID, err := s.repository.CreatePrivateChat(initiatorParams, companionParams)
+	chatUUID, err := s.repository.CreatePrivateChat()
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to create chat: %v", err))
 		return nil, fmt.Errorf("failed to create chat: %v", err)
+	}
+
+	err = s.repository.AddPrivateChatMember(chatUUID, initiatorParams)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to add initiator to private chat: %v", err))
+		return nil, fmt.Errorf("failed to add initiator to private chat: %v", err)
+	}
+
+	err = s.repository.AddPrivateChatMember(chatUUID, companionParams)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to add companion to private chat: %v", err))
+		return nil, fmt.Errorf("failed to add companion to private chat: %v", err)
 	}
 
 	return &chat.CreatePrivateChatOut{

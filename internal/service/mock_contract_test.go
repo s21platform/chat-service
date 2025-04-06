@@ -35,19 +35,33 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
-// CreatePrivateChat mocks base method.
-func (m *MockDBRepo) CreatePrivateChat(initiator, companion *model.ChatMemberParams) (string, error) {
+// AddPrivateChatMember mocks base method.
+func (m *MockDBRepo) AddPrivateChatMember(chatUUID string, member *model.ChatMemberParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePrivateChat", initiator, companion)
+	ret := m.ctrl.Call(m, "AddPrivateChatMember", chatUUID, member)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddPrivateChatMember indicates an expected call of AddPrivateChatMember.
+func (mr *MockDBRepoMockRecorder) AddPrivateChatMember(chatUUID, member interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPrivateChatMember", reflect.TypeOf((*MockDBRepo)(nil).AddPrivateChatMember), chatUUID, member)
+}
+
+// CreatePrivateChat mocks base method.
+func (m *MockDBRepo) CreatePrivateChat() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePrivateChat")
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreatePrivateChat indicates an expected call of CreatePrivateChat.
-func (mr *MockDBRepoMockRecorder) CreatePrivateChat(initiator, companion interface{}) *gomock.Call {
+func (mr *MockDBRepoMockRecorder) CreatePrivateChat() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrivateChat", reflect.TypeOf((*MockDBRepo)(nil).CreatePrivateChat), initiator, companion)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrivateChat", reflect.TypeOf((*MockDBRepo)(nil).CreatePrivateChat))
 }
 
 // DeleteMessage mocks base method.
