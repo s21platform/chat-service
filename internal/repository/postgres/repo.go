@@ -79,26 +79,25 @@ func (r *Repository) AddPrivateChatMember(chatUUID string, member *model.ChatMem
 func (r *Repository) GetPrivateChats(userUUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
-	query := sq.Select(
+	query, args, err := sq.Select(
 		"COALESCE(m.content, '') AS content",
-		"(SELECT username FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid = $1) AS chat_name",
-		"(SELECT avatar_link FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid = $1) AS avatar_link",
-		"COALESCE((SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid), c.created_at) AS created_at",
+		"(SELECT username FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid != $1) AS chat_name",
+		"(SELECT avatar_link FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid != $1) AS avatar_link",
+		"(SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid) AS created_at",
 		"c.uuid",
 	).
 		From("chats_user cu").
 		Join("chats c ON c.uuid = cu.chat_uuid").
 		LeftJoin("messages m ON c.uuid = m.chat_uuid AND m.sent_at = (SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid)").
 		Where(sq.Eq{"cu.user_uuid": userUUID}).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	// Генерируем финальный SQL и список аргументов
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetPrivateChats query: %v", err)
 	}
 
-	err = r.connection.Select(&chats, sqlStr, args...)
+	err = r.connection.Select(&chats, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get private chats from db: %v", err)
 	}
