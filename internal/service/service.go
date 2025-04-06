@@ -164,6 +164,17 @@ func (s *Server) EditPrivateMessage(ctx context.Context, in *chat.EditPrivateMes
 		return nil, fmt.Errorf("attempt to edit deleted message")
 	}
 
+	isUserMessageOwner, err := s.repository.IsMessageOwner(in.ChatUuid, in.MessageUuid, userUUID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to check message owner: %v", err))
+		return nil, fmt.Errorf("failed to check message owner: %v", err)
+	}
+
+	if !isUserMessageOwner {
+		logger.Error("failed to user is not message owner")
+		return nil, fmt.Errorf("failed to user is not message owner")
+	}
+
 	data, err := s.repository.EditPrivateMessage(in.MessageUuid, in.NewContent)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to edit private message: %v", err))

@@ -320,6 +320,9 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		deletionInfo := &model.DeletionInfo{}
 		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
 
+		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+			Return(true, nil)
+
 		updatedMessage := &model.EditedMessage{
 			MessageUUID: messageUUID,
 			Content:     newContent,
@@ -440,6 +443,9 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		deletionInfo := &model.DeletionInfo{}
 		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
 
+		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+			Return(true, nil)
+
 		mockRepo.EXPECT().EditPrivateMessage(messageUUID.String(), newContent).Return(nil, fmt.Errorf("failed to edit private message"))
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
@@ -450,6 +456,52 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to edit private message")
+	})
+
+	t.Run("NotMessageOwner", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
+		mockLogger.EXPECT().Error("failed to user is not message owner")
+
+		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
+			Return(true, nil)
+
+		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
+			Return(&model.DeletionInfo{}, nil)
+
+		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+			Return(false, nil)
+
+		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
+			ChatUuid:    chatUUID,
+			MessageUuid: messageUUID.String(),
+			NewContent:  newContent,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to user is not message owner")
+	})
+
+	t.Run("IsMessageOwner_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
+			Return(true, nil)
+
+		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
+			Return(&model.DeletionInfo{}, nil)
+
+		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+			Return(false, fmt.Errorf("some DB error"))
+
+		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
+			ChatUuid:    chatUUID,
+			MessageUuid: messageUUID.String(),
+			NewContent:  newContent,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to check message owner")
 	})
 }
 

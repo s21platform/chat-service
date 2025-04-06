@@ -17,7 +17,7 @@ type DBRepo interface {
 	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
 	EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error)
 	IsChatMember(chatUUID, userUUID string) (bool, error)
-	GetPrivateMessage(messageUUID string) (*model.EditedMessage, error)
+	IsMessageOwner(chatUUID, messageUUID, userUUID string) (bool, error)
 }
 
 type UserClient interface {
