@@ -154,21 +154,6 @@ func (mr *MockDBRepoMockRecorder) GetPrivateMessage(messageUUID interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateMessage), messageUUID)
 }
 
-// GetPrivateDeletionInfo mocks base method.
-func (m *MockDBRepo) GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPrivateDeletionInfo", messageID)
-	ret0, _ := ret[0].(*model.DeletionInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPrivateDeletionInfo indicates an expected call of GetPrivateDeletionInfo.
-func (mr *MockDBRepoMockRecorder) GetPrivateDeletionInfo(messageID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateDeletionInfo", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateDeletionInfo), messageID)
-}
-
 // GetPrivateRecentMessages mocks base method.
 func (m *MockDBRepo) GetPrivateRecentMessages(chatUUID, userUUID string) (*model.MessageList, error) {
 	m.ctrl.T.Helper()

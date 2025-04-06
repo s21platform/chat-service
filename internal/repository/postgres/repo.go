@@ -108,7 +108,7 @@ func (r *Repository) GetPrivateChats(userUUID string) (*model.ChatInfoList, erro
 func (r *Repository) GetGroupChats(userUUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
-	query := sq.Select(
+	query, args, err := sq.Select(
 		"COALESCE(gm.content, '') AS content",
 		"gc.chat_name",
 		"gc.avatar_link",
@@ -119,14 +119,14 @@ func (r *Repository) GetGroupChats(userUUID string) (*model.ChatInfoList, error)
 		Join("group_chats gc ON gc.uuid = gcu.chat_uuid").
 		LeftJoin("group_messages gm ON gc.uuid = gm.chat_uuid AND gm.sent_at = (SELECT MAX(sent_at) FROM group_messages WHERE chat_uuid = gc.uuid)").
 		Where(sq.Eq{"gcu.user_uuid": userUUID}).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	sqlStr, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
 	}
 
-	err = r.connection.Select(&chats, sqlStr, args...)
+	err = r.connection.Select(&chats, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chats from db: %v", err)
 	}
@@ -266,54 +266,6 @@ func (r *Repository) GetPrivateMessage(messageUUID string) (*model.EditedMessage
 	}
 
 	return &editedMessage, nil
-}
-
-func (r *Repository) IsChatMember(chatUUID, userUUID string) (bool, error) {
-	query := sq.
-		Select("COUNT(*) > 0").
-		From("chats_user").
-		Where(sq.And{
-			sq.Eq{"chat_uuid": chatUUID},
-			sq.Eq{"user_uuid": userUUID},
-		}).
-		PlaceholderFormat(sq.Dollar)
-
-	var isMember bool
-	sqlStr, args, err := query.ToSql()
-	if err != nil {
-		return false, fmt.Errorf("failed to build IsChatMember query: %v", err)
-	}
-
-	err = r.connection.Get(&isMember, sqlStr, args...)
-	if err != nil {
-		return false, fmt.Errorf("failed to check user membership in db: %v", err)
-	}
-
-	return isMember, nil
-}
-
-func (r *Repository) GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error) {
-	var deletionInfo model.DeletionInfo
-
-	query := sq.Select(
-		"COALESCE(delete_format::text, '') AS delete_format",
-		"COALESCE(deleted_by::text, '') AS deleted_by",
-		"COALESCE(to_char(deleted_at, 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), '') AS deleted_at").
-		From("messages").
-		Where(sq.Eq{"uuid": messageID}).
-		PlaceholderFormat(sq.Dollar)
-
-	sqlStr, args, err := query.ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build GetPrivateDeletionInfo query: %v", err)
-	}
-
-	err = r.connection.Get(&deletionInfo, sqlStr, args...)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("failed to get deletion info from db: %v", err)
-	}
-
-	return &deletionInfo, nil
 }
 
 func (r *Repository) DeletePrivateMessage(userUUID, messageID, mode string) (bool, error) {
