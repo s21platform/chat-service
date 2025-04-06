@@ -37,11 +37,6 @@ github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/s21platform/chat-proto v0.0.12 h1:AwJE4CMA2VPu8SsDtcE0KoYlRDA0otgeKtnseeP7Ej0=
-github.com/s21platform/chat-proto v0.0.12/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
-github.com/s21platform/chat-proto v0.0.13/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
-github.com/s21platform/chat-proto v0.0.14 h1:a+MTpMkBgiXzZXv6p1OnNW1gNkmG8xCv1ifEnuDv3Dc=
-github.com/s21platform/chat-proto v0.0.14/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
 github.com/s21platform/chat-proto v0.0.16 h1:64bMokhMhCQMZJK9rmLGiDFCUprvmVcaEiaBcssz9aQ=
 github.com/s21platform/chat-proto v0.0.16/go.mod h1:CeEtQiKpmGWom1FPgUAOWUpuPBeiXTVi2D261XSTdHo=
 github.com/s21platform/logger-lib v0.0.6 h1:Aa3wV7zsaUSUkLa4P8stKNKxmKpZEn9dNBsk00I7Ncw=

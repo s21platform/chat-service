@@ -76,29 +76,57 @@ func (r *Repository) AddPrivateChatMember(chatUUID string, member *model.ChatMem
 	return nil
 }
 
-func (r *Repository) GetChats(UUID string) (*model.ChatInfoList, error) {
+func (r *Repository) GetPrivateChats(userUUID string) (*model.ChatInfoList, error) {
 	var chats model.ChatInfoList
 
 	query, args, err := sq.Select(
 		"COALESCE(m.content, '') AS content",
-		"c.chat_name",
-		"c.avatar_link",
-		"m.created_at",
+		"(SELECT username FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid != $1) AS chat_name",
+		"(SELECT avatar_link FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid != $1) AS avatar_link",
+		"(SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid) AS created_at",
 		"c.uuid",
 	).
-		From("chat_members cm").
-		Join("public.chats c ON c.id = cm.chat_id").
-		LeftJoin("public.messages m ON c.last_message_id = m.id").
-		Where(sq.Eq{"cm.user_uuid": UUID}).
-		OrderBy("m.created_at DESC").
+		From("chats_user cu").
+		Join("chats c ON c.uuid = cu.chat_uuid").
+		LeftJoin("messages m ON c.uuid = m.chat_uuid AND m.sent_at = (SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid)").
+		Where(sq.Eq{"cu.user_uuid": userUUID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
+		return nil, fmt.Errorf("failed to build GetPrivateChats query: %v", err)
 	}
 
 	err = r.connection.Select(&chats, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get private chats from db: %v", err)
+	}
+
+	return &chats, nil
+}
+
+func (r *Repository) GetGroupChats(userUUID string) (*model.ChatInfoList, error) {
+	var chats model.ChatInfoList
+
+	query := sq.Select(
+		"COALESCE(gm.content, '') AS content",
+		"gc.chat_name",
+		"gc.avatar_link",
+		"COALESCE((SELECT MAX(sent_at) FROM messages WHERE chat_uuid = gc.uuid), gc.created_at) AS created_at",
+		"gc.uuid",
+	).
+		From("group_chats_user gcu").
+		Join("group_chats gc ON gc.uuid = gcu.chat_uuid").
+		LeftJoin("group_messages gm ON gc.uuid = gm.chat_uuid AND gm.sent_at = (SELECT MAX(sent_at) FROM group_messages WHERE chat_uuid = gc.uuid)").
+		Where(sq.Eq{"gcu.user_uuid": userUUID}).
+		PlaceholderFormat(sq.Dollar)
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build GetChats query: %v", err)
+	}
+
+	err = r.connection.Select(&chats, sqlStr, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chats from db: %v", err)
 	}

@@ -94,19 +94,34 @@ func (mr *MockDBRepoMockRecorder) EditPrivateMessage(messageUUID, newContent int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditPrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).EditPrivateMessage), messageUUID, newContent)
 }
 
-// GetChats mocks base method.
-func (m *MockDBRepo) GetChats(UUID string) (*model.ChatInfoList, error) {
+// GetGroupChats mocks base method.
+func (m *MockDBRepo) GetGroupChats(userUUID string) (*model.ChatInfoList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetChats", UUID)
+	ret := m.ctrl.Call(m, "GetGroupChats", userUUID)
 	ret0, _ := ret[0].(*model.ChatInfoList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetChats indicates an expected call of GetChats.
-func (mr *MockDBRepoMockRecorder) GetChats(UUID interface{}) *gomock.Call {
+// GetGroupChats indicates an expected call of GetGroupChats.
+func (mr *MockDBRepoMockRecorder) GetGroupChats(userUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChats", reflect.TypeOf((*MockDBRepo)(nil).GetChats), UUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupChats", reflect.TypeOf((*MockDBRepo)(nil).GetGroupChats), userUUID)
+}
+
+// GetPrivateChats mocks base method.
+func (m *MockDBRepo) GetPrivateChats(userUUID string) (*model.ChatInfoList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPrivateChats", userUUID)
+	ret0, _ := ret[0].(*model.ChatInfoList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPrivateChats indicates an expected call of GetPrivateChats.
+func (mr *MockDBRepoMockRecorder) GetPrivateChats(userUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateChats", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateChats), userUUID)
 }
 
 // GetPrivateDeletionInfo mocks base method.

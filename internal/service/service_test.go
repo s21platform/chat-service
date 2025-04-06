@@ -452,3 +452,95 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to edit private message")
 	})
 }
+
+func TestServer_GetChats(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockUserClient := NewMockUserClient(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	userUUID := uuid.New().String()
+	expectedLastMessageTime := time.Now()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
+
+	s := New(mockRepo, mockUserClient)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetChats")
+
+		expPrivateChats := &model.ChatInfoList{
+			{
+				LastMessage:          "How are you?",
+				ChatName:             "Private chat name",
+				AvatarURL:            "standart avatar url",
+				LastMessageTimestamp: &expectedLastMessageTime,
+				ChatUUID:             uuid.New().String(),
+			},
+		}
+
+		expGroupChats := &model.ChatInfoList{
+			{
+				LastMessage:          "Hello!",
+				ChatName:             "Group chat name",
+				AvatarURL:            "standart avatar url",
+				LastMessageTimestamp: &expectedLastMessageTime,
+				ChatUUID:             uuid.New().String(),
+			},
+		}
+
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(expPrivateChats, nil)
+		mockRepo.EXPECT().GetGroupChats(userUUID).Return(expGroupChats, nil)
+
+		chats, err := s.GetChats(ctx, &chat.ChatEmpty{})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, chats)
+		assert.Len(t, chats.Chats, 2)
+	})
+
+	t.Run("no_userUUID", func(t *testing.T) {
+		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
+
+		mockLogger.EXPECT().AddFuncName("GetChats")
+		mockLogger.EXPECT().Error("failed to find userUUID")
+
+		_, err := s.GetChats(badCtx, &chat.ChatEmpty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to find userUUID")
+	})
+
+	t.Run("DB_private_error", func(t *testing.T) {
+		expectedErr := fmt.Errorf("failed to get private chats")
+
+		mockLogger.EXPECT().AddFuncName("GetChats")
+		mockLogger.EXPECT().Error(gomock.Any())
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(nil, expectedErr)
+
+		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), expectedErr.Error())
+	})
+
+	t.Run("DB_group_error", func(t *testing.T) {
+		expectedErr := fmt.Errorf("failed to get group chats")
+
+		mockLogger.EXPECT().AddFuncName("GetChats")
+		mockLogger.EXPECT().Error(gomock.Any())
+		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(&model.ChatInfoList{}, nil)
+		mockRepo.EXPECT().GetGroupChats(userUUID).Return(nil, expectedErr)
+
+		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), expectedErr.Error())
+	})
+}

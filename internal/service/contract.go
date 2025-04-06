@@ -10,12 +10,12 @@ import (
 type DBRepo interface {
 	CreatePrivateChat() (string, error)
 	AddPrivateChatMember(chatUUID string, member *model.ChatMemberParams) error
-	GetChats(UUID string) (*model.ChatInfoList, error)
+	GetPrivateChats(userUUID string) (*model.ChatInfoList, error)
+	GetGroupChats(userUUID string) (*model.ChatInfoList, error)
 	GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error)
 	DeleteMessage(messageID string, mode string) (bool, error)
-
-	EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error)
 	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
+	EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error)
 	IsChatMember(chatUUID, userUUID string) (bool, error)
 	GetPrivateMessage(messageUUID string) (*model.EditedMessage, error)
 }
