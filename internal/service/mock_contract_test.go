@@ -64,19 +64,19 @@ func (mr *MockDBRepoMockRecorder) CreatePrivateChat() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrivateChat", reflect.TypeOf((*MockDBRepo)(nil).CreatePrivateChat))
 }
 
-// DeleteMessage mocks base method.
-func (m *MockDBRepo) DeleteMessage(messageID, mode string) (bool, error) {
+// DeletePrivateMessage mocks base method.
+func (m *MockDBRepo) DeletePrivateMessage(userUUID, messageID, mode string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteMessage", messageID, mode)
+	ret := m.ctrl.Call(m, "DeletePrivateMessage", userUUID, messageID, mode)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DeleteMessage indicates an expected call of DeleteMessage.
-func (mr *MockDBRepoMockRecorder) DeleteMessage(messageID, mode interface{}) *gomock.Call {
+// DeletePrivateMessage indicates an expected call of DeletePrivateMessage.
+func (mr *MockDBRepoMockRecorder) DeletePrivateMessage(userUUID, messageID, mode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMessage", reflect.TypeOf((*MockDBRepo)(nil).DeleteMessage), messageID, mode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).DeletePrivateMessage), userUUID, messageID, mode)
 }
 
 // EditPrivateMessage mocks base method.
@@ -139,21 +139,6 @@ func (mr *MockDBRepoMockRecorder) GetPrivateDeletionInfo(messageID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateDeletionInfo", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateDeletionInfo), messageID)
 }
 
-// GetPrivateMessage mocks base method.
-func (m *MockDBRepo) GetPrivateMessage(messageUUID string) (*model.EditedMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPrivateMessage", messageUUID)
-	ret0, _ := ret[0].(*model.EditedMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPrivateMessage indicates an expected call of GetPrivateMessage.
-func (mr *MockDBRepoMockRecorder) GetPrivateMessage(messageUUID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateMessage), messageUUID)
-}
-
 // GetPrivateRecentMessages mocks base method.
 func (m *MockDBRepo) GetPrivateRecentMessages(chatUUID, userUUID string) (*model.MessageList, error) {
 	m.ctrl.T.Helper()
@@ -182,6 +167,21 @@ func (m *MockDBRepo) IsChatMember(chatUUID, userUUID string) (bool, error) {
 func (mr *MockDBRepoMockRecorder) IsChatMember(chatUUID, userUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsChatMember", reflect.TypeOf((*MockDBRepo)(nil).IsChatMember), chatUUID, userUUID)
+}
+
+// IsMessageOwner mocks base method.
+func (m *MockDBRepo) IsMessageOwner(chatUUID, messageUUID, userUUID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsMessageOwner", chatUUID, messageUUID, userUUID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsMessageOwner indicates an expected call of IsMessageOwner.
+func (mr *MockDBRepoMockRecorder) IsMessageOwner(chatUUID, messageUUID, userUUID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMessageOwner", reflect.TypeOf((*MockDBRepo)(nil).IsMessageOwner), chatUUID, messageUUID, userUUID)
 }
 
 // MockUserClient is a mock of UserClient interface.

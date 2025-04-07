@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS messages
     chat_uuid       UUID      NOT NULL,
     sender_uuid   UUID      NOT NULL,
     content       TEXT      NOT NULL,
-    sent_at       TIMESTAMP NOT NULL,
+    sent_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP,
     root_uuid       UUID,
     parent_uuid     UUID,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS messages
     FOREIGN KEY (chat_uuid, sender_uuid) REFERENCES chats_user (chat_uuid, user_uuid),
     FOREIGN KEY (root_uuid) REFERENCES messages (uuid),
     FOREIGN KEY (parent_uuid) REFERENCES messages (uuid),
-    FOREIGN KEY (deleted_by) REFERENCES chats_user (user_uuid)
+    FOREIGN KEY (chat_uuid, deleted_by) REFERENCES chats_user (chat_uuid, user_uuid)
 );
 
 -- +goose Down
