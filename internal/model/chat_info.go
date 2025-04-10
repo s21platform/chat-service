@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	chat_proto "github.com/s21platform/chat-proto/chat-proto"
+	chat_proto "github.com/s21platform/chat-service/pkg/chat"
 )
 
 type ChatInfoList []ChatInfo
