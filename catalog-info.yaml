@@ -1,0 +1,182 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: chat
+  description: Сервис чатов
+  annotations:
+    github.com/project-slug: s21platform/chat-service
+  tags:
+    - grpc
+    - postgres
+    - centrifuge
+    - kafka
+  links:
+    - url: https://metric.x.space-21.ru/d/ee8azz6s053b4a/chat-service?orgId=1
+      title: Grafana
+      icon: dashboard
+spec:
+  type: service
+  lifecycle: production
+  owner: chat-service-team
+  providesApis:
+    - CreatePrivateChat-v0
+    - GetChats-v0
+    - GetPrivateRecentMessages-v0
+    - DeletePrivateMessage-v0
+    - EditPrivateMessage-v0
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: CreatePrivateChat-v0
+  description: Создание приватного чата
+  annotations:
+    github.com/project-slug: s21platform/chat-proto
+  #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
+  tags:
+    - proto
+spec:
+  type: grpc
+  lifecycle: production
+  owner: chat-service-team
+  definition: |
+    rpc CreatePrivateChat(CreatePrivateChatIn) returns (CreatePrivateChatOut){};
+    
+    message CreatePrivateChatIn {
+      string companion_uuid = 1;
+    }
+    
+    message CreatePrivateChatOut {
+      string new_chat_uuid = 1;
+    }
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: GetChats-v0
+  description: Получение всех чатов пользователя
+  annotations:
+    github.com/project-slug: s21platform/chat-proto
+  #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
+  tags:
+    - proto
+spec:
+  type: grpc
+  lifecycle: production
+  owner: chat-service-team
+  definition: |
+    rpc GetChats(ChatEmpty) returns (GetChatsOut){};
+
+    message ChatEmpty {}
+
+    message Chat {
+      string last_message = 1;
+      string chat_name = 2;
+      string avatar_url = 3;
+      string last_message_timestamp = 4;
+      string chat_uuid = 5;
+    }
+    
+    message GetChatsOut {
+      repeated Chat chats = 1;
+    }
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: GetPrivateRecentMessages-v0
+  description: Получение последних 15 сообщений приватного чата
+  annotations:
+    github.com/project-slug: s21platform/chat-proto
+  #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
+  tags:
+    - proto
+spec:
+  type: grpc
+  lifecycle: production
+  owner: chat-service-team
+  definition: |
+    rpc GetPrivateRecentMessages(GetPrivateRecentMessagesIn) returns (GetPrivateRecentMessagesOut){};
+
+    message Message {
+      string uuid = 1;
+      string content = 2;
+      string sent_at = 3;
+      string updated_at = 4;
+      string root_uuid = 5;
+      string parent_uuid = 6;
+    }
+
+    message GetPrivateRecentMessagesIn {
+      string chat_uuid = 1;
+    }
+
+    message GetPrivateRecentMessagesOut {
+      repeated Message messages = 1;
+    }
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: DeletePrivateMessage-v0
+  description: Удаление сообщения в приватном чате
+  annotations:
+    github.com/project-slug: s21platform/chat-proto
+  #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
+  tags:
+    - proto
+spec:
+  type: grpc
+  lifecycle: production
+  owner: chat-service-team
+  definition: |
+    rpc DeletePrivateMessage(DeletePrivateMessageIn) returns (DeletePrivateMessageOut){};
+
+    message DeletePrivateMessageIn {
+      string chat_uuid = 1;
+      string message_uuid = 2;
+      string mode = 3;
+    }
+
+    message DeletePrivateMessageOut {
+      bool deletion_status = 1;
+    }
+
+---
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: EditPrivateMessage-v0
+  description: Изменение сообщения в приватном чате
+  annotations:
+    github.com/project-slug: s21platform/chat-proto
+  #    backstage.io/techdocs-ref: dir:.  # Если планируете использовать TechDocs
+  tags:
+    - proto
+spec:
+  type: grpc
+  lifecycle: production
+  owner: chat-service-team
+  definition: |
+    rpc EditPrivateMessage(EditPrivateMessageIn) returns (EditPrivateMessageOut){};
+    
+    message EditPrivateMessageIn {
+      string chat_uuid = 1;
+      string message_uuid = 2;
+      string new_content = 3;
+    }
+    
+    message EditPrivateMessageOut {
+      string message_uuid = 1;
+      string new_content = 2;
+      string updated_at = 3;
+    }

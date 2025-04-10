@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+option go_package = "pkg/chat";
+
+service ChatService {
+  rpc CreatePrivateChat(CreatePrivateChatIn) returns (CreatePrivateChatOut){};
+  rpc GetChats(ChatEmpty) returns (GetChatsOut){};
+  rpc GetPrivateRecentMessages(GetPrivateRecentMessagesIn) returns (GetPrivateRecentMessagesOut){};
+
+  rpc DeletePrivateMessage(DeletePrivateMessageIn) returns (DeletePrivateMessageOut){};
+  rpc EditPrivateMessage(EditPrivateMessageIn) returns (EditPrivateMessageOut){};
+}
+
+message ChatEmpty {}
+
+message CreatePrivateChatIn {
+  string companion_uuid = 1;  // uuid второго пользователя, с которым будет идти переписка
+}
+
+message CreatePrivateChatOut {
+  string new_chat_uuid = 1; // uuid созданного чата
+}
+
+message Chat {
+  string last_message = 1;           // Контент последнего сообщения
+  string chat_name = 2;              // Название чата
+  string avatar_url = 3;             // Аватарка чата
+  string last_message_timestamp = 4; // Время отправки последнего сообщения
+  string chat_uuid = 5;              // UUID чата
+}
+
+message GetChatsOut {
+  repeated Chat chats = 1;  // Список чатов
+}
+
+message Message {
+  string uuid = 1;             // uuid пользователя
+  string content = 2;         // само сообщение
+  string sent_at = 3;         // время отправки
+  string updated_at = 4;      // время обновления
+  string root_uuid = 5;       // uuid корневого сообщения
+  string parent_uuid = 6;     // uuid сообщения, на которое идет прямой ответ
+}
+
+message GetPrivateRecentMessagesIn {
+  string chat_uuid = 1;   // uuid чата, из которого достаем сообщения
+}
+
+message GetPrivateRecentMessagesOut {
+  repeated Message messages = 1;  // список сообщений
+}
+
+message DeletePrivateMessageIn {
+  string chat_uuid = 1;           // uuid чата
+  string message_uuid = 2;        // uuid сообщения
+  string mode = 3;                // тип удаления: у всех или у себя
+}
+
+message DeletePrivateMessageOut {
+  bool deletion_status = 1;    // статус удаления
+}
+
+message EditPrivateMessageIn {
+  string chat_uuid = 1;           // uuid чата
+  string message_uuid = 2;        // uuid сообщения
+  string new_content = 3;         // новый текст сообщения
+}
+
+message EditPrivateMessageOut {
+  string message_uuid = 1;    // uuid измененного сообщения
+  string new_content = 2;     // новый текст сообщения
+  string updated_at = 3;      // время обновления сообщения
+}

@@ -7,7 +7,6 @@ import (
 	_ "github.com/lib/pq" // PostgreSQL driver
 	"google.golang.org/grpc"
 
-	chat "github.com/s21platform/chat-proto/chat-proto"
 	logger_lib "github.com/s21platform/logger-lib"
 
 	"github.com/s21platform/chat-service/internal/client/user"
@@ -15,6 +14,7 @@ import (
 	"github.com/s21platform/chat-service/internal/infra"
 	db "github.com/s21platform/chat-service/internal/repository/postgres"
 	"github.com/s21platform/chat-service/internal/service"
+	"github.com/s21platform/chat-service/pkg/chat"
 )
 
 func main() {
