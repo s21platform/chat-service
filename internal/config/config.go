@@ -49,21 +49,16 @@ type UserService struct {
 }
 
 type Kafka struct {
-	Host           string `env:"KAFKA_HOST"`
-	Port           string `env:"KAFKA_PORT"`
-	UpdateNickname string `env:"KAFKA_UPDATE_NICKNAME"`
+	Host      string `env:"KAFKA_HOST"`
+	Port      string `env:"KAFKA_PORT"`
+	UserTopic string `env:"USER_SET_NEW_NICKNAME"`
 }
 
 func MustLoad() *Config {
 	cfg := &Config{}
+	err := cleanenv.ReadEnv(cfg)
 
-	// 1) читаем .env-файл (урок: .env ← cleanenv)
-	if err := cleanenv.ReadConfig(".env", cfg); err != nil {
-		log.Fatalf("failed to read .env file: %s", err)
-	}
-
-	// 2) потом пере‑перезаписываем из реального окружения, если нужно
-	if err := cleanenv.ReadEnv(cfg); err != nil {
+	if err != nil {
 		log.Fatalf("failed to read env variables: %s", err)
 	}
 

@@ -1,12 +1,12 @@
-package new_nickname
+package user
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/s21platform/chat-service/internal/config"
-	"github.com/s21platform/chat-service/internal/model"
 	"log"
 
+	"github.com/s21platform/chat-service/internal/config"
+	"github.com/s21platform/chat-service/internal/model"
 	"github.com/s21platform/metrics-lib/pkg"
 )
 
@@ -41,7 +41,7 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 
 	log.Printf("Parsed message: UUID=%s, Nickname=%s", msg.UUID, msg.Nickname)
 
-	err = h.dbR.UpdateUserNickname(msg.UUID, msg.Nickname)
+	err = h.dbR.UpdateUserNickname(ctx, msg.UUID, msg.Nickname)
 	if err != nil {
 		m.Increment("update_nickname.error")
 		log.Printf("failed to update nickname: %v", err)

@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -291,7 +292,7 @@ func (r *Repository) IsMessageOwner(chatUUID, messageUUID, userUUID string) (boo
 	return isOwner, nil
 }
 
-func (r *Repository) UpdateUserNickname(userUUID, newNickname string) error {
+func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickname string) error {
 	query, args, err := sq.Update("chats_user").
 		Set("username", newNickname).
 		Where(sq.Eq{"user_uuid": userUUID}).
@@ -302,7 +303,7 @@ func (r *Repository) UpdateUserNickname(userUUID, newNickname string) error {
 		return fmt.Errorf("failed to build UpdateUserNickname query: %v", err)
 	}
 
-	_, err = r.connection.Exec(query, args...)
+	_, err = r.connection.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed to update user nickname in db: %v", err)
 	}
