@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/s21platform/metrics-lib/pkg"
+
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
-	"github.com/s21platform/metrics-lib/pkg"
 )
 
 type Handler struct {

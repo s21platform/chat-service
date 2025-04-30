@@ -5,11 +5,12 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
+	kafkalib "github.com/s21platform/kafka-lib"
+	"github.com/s21platform/metrics-lib/pkg"
+
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/databus/user"
 	"github.com/s21platform/chat-service/internal/repository/postgres"
-	kafkalib "github.com/s21platform/kafka-lib"
-	"github.com/s21platform/metrics-lib/pkg"
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 		cfg.Kafka.Host,
 		cfg.Kafka.Port,
 		cfg.Kafka.UserTopic,
-		"chat-nickname-updater",
+		config.UserNicknameConsumerGroupID,
 	)
 
 	userConsumer, err := kafkalib.NewConsumer(userConsumerConfig, metrics)
