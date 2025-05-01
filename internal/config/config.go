@@ -13,6 +13,7 @@ type Config struct {
 	Logger      Logger
 	Platform    Platform
 	UserService UserService
+	Centrifuge  Centrifuge
 }
 
 type Service struct {
@@ -45,6 +46,10 @@ type Platform struct {
 type UserService struct {
 	Host string `env:"USER_SERVICE_HOST"`
 	Port string `env:"USER_SERVICE_PORT"`
+}
+
+type Centrifuge struct {
+	Port string `env:"CENTRIFUGE_PORT" env-default:"8093"`
 }
 
 func MustLoad() *Config {

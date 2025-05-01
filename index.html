@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Chat</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+        }
+        #chat {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #chat-messages {
+            background: #111;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #chat-input {
+            display: flex;
+            padding: 10px;
+            background: #111;
+            border-top: 1px solid #333;
+        }
+        #chat-input input[type="text"] {
+            flex-grow: 1;
+            padding: 10px 20px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin-right: 10px;
+            color: #fff;
+            background: #000;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+        #chat-input input[type="text"]:hover,
+        #chat-input input[type="text"]:focus {
+            border-color: #666;
+            outline: none;
+        }
+        #chat-input input[type="submit"] {
+            padding: 10px 20px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #000;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #chat-input input[type="submit"]:hover {
+            background-color: #333;
+        }
+        @keyframes flipIn {
+            from {
+                transform: rotateX(-90deg);
+                opacity: 0;
+            }
+            to {
+                transform: rotateX(0deg);
+                opacity: 1;
+            }
+        }
+        .message {
+            border-left: 2px solid #333;
+            animation: flipIn 0.3s ease-out;
+            background-color: #111;
+            border-radius: 0 4px 4px 0;
+            padding: 12px 15px;
+            margin: 10px 0;
+            color: #fff;
+            position: relative;
+        }
+        .time {
+            font-size: 0.8em;
+            color: #666;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .meta {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 3px;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 90%;
+        }
+        .text {
+            font-size: 1em;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 90%;
+        }
+    </style>
+    <script type="text/javascript" src="https://unpkg.com/centrifuge@^5/dist/centrifuge.js"></script>
+    <script type="text/javascript">
+        class Message {
+            constructor(time, text, meta) {
+                this.time = time; // The time the message was sent
+                this.text = text; // The text of the message
+                this.meta = meta; // Any additional data, like metadata or JSON content
+            }
+
+            // Method to convert the message to an HTML element
+            toHtml() {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+
+                const timeElement = document.createElement('div');
+                timeElement.className = 'time';
+                timeElement.textContent = this.time;
+
+                const textElement = document.createElement('div');
+                textElement.className = 'text';
+                textElement.textContent = this.text;
+
+                messageElement.appendChild(timeElement);
+                messageElement.appendChild(textElement);
+                if (this.meta) {
+                    const metaElement = document.createElement('div');
+                    metaElement.className = 'meta';
+                    metaElement.textContent = this.meta;
+                    messageElement.appendChild(metaElement);
+                }
+
+                return messageElement;
+            }
+        }
+
+        // helper functions to work with escaping html.
+        const tagsToReplace = {'&': '&amp;', '<': '&lt;', '>': '&gt;'};
+        function replaceTag(tag) {return tagsToReplace[tag] || tag;}
+        function safeTagsReplace(str) {return str.replace(/[&<>]/g, replaceTag);}
+
+        const channel = "chat:index";
+
+        window.addEventListener('load', function() {
+            const messages = document.getElementById('chat-messages');
+            const inputContainer = document.getElementById("chat-input");
+            const input = document.getElementById("chat-text");
+            const submit = document.getElementById('chat-submit');
+
+            // Get user parameter from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userParam = urlParams.get('user') || '1';
+
+            const centrifuge = new Centrifuge('ws://localhost:8093/connection/websocket?user=' + userParam, {
+                data: {"user-agent": navigator.userAgent}
+            });
+
+            centrifuge.on('connecting', function(ctx){
+                drawText('Connecting', JSON.stringify(ctx));
+                input.setAttribute('disabled', 'true');
+            });
+
+            centrifuge.on('disconnected', function(ctx){
+                drawText('Disconnected', JSON.stringify(ctx));
+                input.setAttribute('disabled', 'true');
+            });
+
+            // bind listeners on centrifuge object instance events.
+            centrifuge.on('connected', function(ctx){
+                drawText('Connected', JSON.stringify(ctx));
+                input.removeAttribute('disabled');
+            });
+
+            centrifuge.on('message', function(ctx) {
+                drawText('Message received', JSON.stringify(ctx.data));
+            });
+
+            centrifuge.on('publication', function(ctx) {
+                drawText('Server-side publication from channel ' + ctx.channel, JSON.stringify(ctx.data));
+            });
+
+            centrifuge.on('join', function(ctx) {
+                drawText('Server-side join from channel ' + ctx.channel, JSON.stringify(ctx.info));
+            });
+
+            centrifuge.on('leave', function(ctx) {
+                drawText('Server-side leave from channel ' + ctx.channel, JSON.stringify(ctx.info));
+            });
+
+            centrifuge.on('subscribing', function(ctx) {
+                drawText('Subscribing on server-side channel ' + ctx.channel);
+            });
+
+            centrifuge.on('unsubscribed', function(ctx) {
+                drawText('Unsubscribed from server-side channel ' + ctx.channel);
+            });
+
+            centrifuge.on('subscribed', function(ctx) {
+                drawText('Subscribed to server-side channel ' + ctx.channel, JSON.stringify(ctx));
+            });
+
+            // show how many users currently in channel.
+            function showPresence(sub) {
+                sub.presence().then(function(result) {
+                    let count = 0;
+                    for (let key in result.clients){
+                        count++;
+                    }
+                    drawText('Now in this room – ' + count + ' clients');
+                }, function(err) {
+                    // Silently handle presence error
+                    console.log('Presence error:', err);
+                });
+            }
+
+            // subscribe on channel and bind various event listeners. Actual
+            // subscription request will be sent after client connects to
+            // a server.
+            const sub = centrifuge.newSubscription(channel, {});
+
+            sub.on("publication", handlePublication)
+                .on("join", handleJoin)
+                .on("leave", handleLeave)
+                .on("unsubscribed", handleUnsubscribed)
+                .on("subscribed", handleSubscribed)
+                .on("subscribing", handleSubscribing)
+                .on("error", handleSubscriptionError);
+
+            sub.subscribe();
+
+            // Trigger actual connection establishing with a server.
+            // At this moment actual client work starts - i.e. subscriptions
+            // defined start subscribing etc.
+            centrifuge.connect();
+
+            function handleSubscribed(ctx) {
+                drawText('Subscribed on channel ' + ctx.channel, JSON.stringify(ctx));
+                showPresence(sub);
+
+                centrifuge.rpc("getCurrentYear", {}).then(function(data){
+                    drawText("Got RPC response", JSON.stringify(data));
+                }, function(err) {
+                    // Silently handle RPC error
+                    console.log('RPC error:', err);
+                });
+            }
+
+            function handleUnsubscribed(ctx) {
+                drawText('Unsubscribed from channel ' + ctx.channel, JSON.stringify(ctx));
+            }
+
+            function handleSubscribing(ctx) {
+                drawText('Subscribing on channel ' + ctx.channel, JSON.stringify(ctx));
+            }
+
+            function handleSubscriptionError(ctx) {
+                drawText('Error subscribing on channel', JSON.stringify(ctx));
+            }
+
+            function handlePublication(ctx) {
+                const inputText = ctx.data["input"].toString();
+                const text = safeTagsReplace(inputText);
+                drawText(text, JSON.stringify(ctx));
+            }
+
+            function handleJoin(ctx) {
+                drawText('Client joined channel ' + this.channel, JSON.stringify(ctx));
+            }
+
+            function handleLeave(ctx) {
+                drawText('Client left channel ' + this.channel, JSON.stringify(ctx));
+            }
+
+            function drawText(text, meta) {
+                const message = new Message((new Date()).toLocaleTimeString(), text, meta);
+                const needScroll = needScrollToBottom();
+                messages.appendChild(message.toHtml());
+                if (needScroll) {
+                    messages.scrollTop = messages.scrollHeight;
+                }
+            }
+
+            function needScrollToBottom() {
+                return messages.scrollHeight - messages.scrollTop - messages.clientHeight - inputContainer.clientHeight <= 0;
+            }
+
+            function sendMessage() {
+                sub.publish({"input": input.value}).then(function() {
+                    console.log("Successfully published to channel");
+                }, function(err) {
+                    drawText("❌ Publish error", JSON.stringify(err));
+                });
+                input.value = '';
+            }
+
+            submit.addEventListener('click', function(event) {
+                event.preventDefault();
+                sendMessage();
+            });
+
+            input.addEventListener('keypress', function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="chat">
+    <div id="chat-messages"></div>
+    <div id="chat-input">
+        <input type="text" id="chat-text" placeholder="Type your message here..." autocomplete="off" />
+        <input type="submit" id="chat-submit" value="SEND" />
+    </div>
+</div>
+</body>
+</html>
