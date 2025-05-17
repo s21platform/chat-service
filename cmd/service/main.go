@@ -36,11 +36,12 @@ func main() {
 
 	chat.RegisterChatServiceServer(server, chatService)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Service.Port))
 	if err != nil {
-		logger.Error(fmt.Sprintf("Cannot listen port: %s; Error: %v", cfg.Service.Port, err))
+		logger.Error(fmt.Sprintf("failed to start TCP listener: %v", err))
 	}
-	if err = server.Serve(lis); err != nil {
-		logger.Error(fmt.Sprintf("Cannot start grpc, port: %s; Error: %v", cfg.Service.Port, err))
+
+	if err = server.Serve(listener); err != nil {
+		logger.Error(fmt.Sprintf("failed to start gRPC listener: %v", err))
 	}
 }
