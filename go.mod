@@ -2,8 +2,6 @@ module github.com/s21platform/chat-service
 
 go 1.24
 
-toolchain go1.24.3
-
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/golang/mock v1.6.0
