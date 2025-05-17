@@ -13,6 +13,7 @@ type Config struct {
 	Logger      Logger
 	Platform    Platform
 	UserService UserService
+	Kafka       Kafka
 }
 
 type Service struct {
@@ -45,6 +46,12 @@ type Platform struct {
 type UserService struct {
 	Host string `env:"USER_SERVICE_HOST"`
 	Port string `env:"USER_SERVICE_PORT"`
+}
+
+type Kafka struct {
+	Host      string `env:"KAFKA_HOST"`
+	Port      string `env:"KAFKA_PORT"`
+	UserTopic string `env:"USER_SET_NEW_NICKNAME"`
 }
 
 func MustLoad() *Config {
