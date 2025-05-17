@@ -1,0 +1,21 @@
+# Generated code
+pkg/chat/
+
+# Main files and workers
+cmd/
+
+
+internal/pkg
+internal/client
+internal/databus
+internal/infra
+internal/model
+
+migrations/
+
+# Config files
+internal/config/
+
+# Test files
+**/*_test.go
+**/testdata/
