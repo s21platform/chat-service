@@ -8,13 +8,18 @@ RUN go mod download
 COPY . .
 
 RUN go build -o build/main cmd/service/main.go
+RUN go build -o build/worker_kafka_user cmd/workers/kafka/user/main.go
+RUN go build -o build/worker_kafka_avatar cmd/workers/kafka/avatar/main.go
 
 FROM alpine
 
 WORKDIR /app
 
 COPY --from=builder /usr/src/service/build/main /app
-RUN apk add --no-cache gcompat
-RUN chmod +x main
+COPY --from=builder /usr/src/service/build/worker_kafka_user .
+COPY --from=builder /usr/src/service/build/worker_kafka_avatar .
 
-CMD ./main
+RUN apk add --no-cache gcompat
+RUN chmod +x main worker_kafka_user worker_kafka_avatar
+
+CMD ./main & ./worker_kafka_user & ./worker_kafka_avatar
