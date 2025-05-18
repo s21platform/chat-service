@@ -430,7 +430,7 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "attempt to edit deleted message")
+		assert.Contains(t, err.Error(), "failed to edit deleted message")
 	})
 
 	t.Run("DB_error", func(t *testing.T) {
@@ -696,7 +696,7 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 		})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to check if user is chat member")
+		assert.Contains(t, err.Error(), "failed to check user is chat member")
 	})
 
 	t.Run("invalid_mode", func(t *testing.T) {
