@@ -2,16 +2,16 @@ syntax = "proto3";
 
 option go_package = "pkg/chat";
 
+import  "google/protobuf/empty.proto";
+
 service ChatService {
   rpc CreatePrivateChat(CreatePrivateChatIn) returns (CreatePrivateChatOut){};
-  rpc GetChats(ChatEmpty) returns (GetChatsOut){};
+  rpc GetChats(google.protobuf.Empty) returns (GetChatsOut){};
   rpc GetPrivateRecentMessages(GetPrivateRecentMessagesIn) returns (GetPrivateRecentMessagesOut){};
 
   rpc DeletePrivateMessage(DeletePrivateMessageIn) returns (DeletePrivateMessageOut){};
   rpc EditPrivateMessage(EditPrivateMessageIn) returns (EditPrivateMessageOut){};
 }
-
-message ChatEmpty {}
 
 message CreatePrivateChatIn {
   string companion_uuid = 1;  // uuid второго пользователя, с которым будет идти переписка

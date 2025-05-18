@@ -5,7 +5,6 @@
 
 - [api/chat.proto](#api_chat-proto)
     - [Chat](#-Chat)
-    - [ChatEmpty](#-ChatEmpty)
     - [CreatePrivateChatIn](#-CreatePrivateChatIn)
     - [CreatePrivateChatOut](#-CreatePrivateChatOut)
     - [DeletePrivateMessageIn](#-DeletePrivateMessageIn)
@@ -43,16 +42,6 @@
 | avatar_url | [string](#string) |  | Аватарка чата |
 | last_message_timestamp | [string](#string) |  | Время отправки последнего сообщения |
 | chat_uuid | [string](#string) |  | UUID чата |
-
-
-
-
-
-
-<a name="-ChatEmpty"></a>
-
-### ChatEmpty
-
 
 
 
@@ -234,7 +223,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | CreatePrivateChat | [.CreatePrivateChatIn](#CreatePrivateChatIn) | [.CreatePrivateChatOut](#CreatePrivateChatOut) |  |
-| GetChats | [.ChatEmpty](#ChatEmpty) | [.GetChatsOut](#GetChatsOut) |  |
+| GetChats | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetChatsOut](#GetChatsOut) |  |
 | GetPrivateRecentMessages | [.GetPrivateRecentMessagesIn](#GetPrivateRecentMessagesIn) | [.GetPrivateRecentMessagesOut](#GetPrivateRecentMessagesOut) |  |
 | DeletePrivateMessage | [.DeletePrivateMessageIn](#DeletePrivateMessageIn) | [.DeletePrivateMessageOut](#DeletePrivateMessageOut) |  |
 | EditPrivateMessage | [.EditPrivateMessageIn](#EditPrivateMessageIn) | [.EditPrivateMessageOut](#EditPrivateMessageOut) |  |
