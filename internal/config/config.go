@@ -49,9 +49,10 @@ type UserService struct {
 }
 
 type Kafka struct {
-	Host      string `env:"KAFKA_HOST"`
-	Port      string `env:"KAFKA_PORT"`
-	UserTopic string `env:"USER_SET_NEW_NICKNAME"`
+	Host        string `env:"KAFKA_HOST"`
+	Port        string `env:"KAFKA_PORT"`
+	UserTopic   string `env:"USER_SET_NEW_NICKNAME"`
+	AvatarTopic string `env:"AVATAR_SET_NEW_USER"`
 }
 
 func MustLoad() *Config {

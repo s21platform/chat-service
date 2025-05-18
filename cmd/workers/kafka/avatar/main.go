@@ -11,11 +11,11 @@ import (
 	"github.com/s21platform/metrics-lib/pkg"
 
 	"github.com/s21platform/chat-service/internal/config"
-	"github.com/s21platform/chat-service/internal/databus/user"
+	"github.com/s21platform/chat-service/internal/databus/avatar"
 	"github.com/s21platform/chat-service/internal/repository/postgres"
 )
 
-const userNicknameConsumerGroupID = "chat-nickname-updater"
+const newAvatarConsumerGroupID = "avatar-updater"
 
 func main() {
 	cfg := config.MustLoad()
@@ -35,16 +35,16 @@ func main() {
 	consumerConfig := kafkalib.DefaultConsumerConfig(
 		cfg.Kafka.Host,
 		cfg.Kafka.Port,
-		cfg.Kafka.UserTopic,
-		userNicknameConsumerGroupID,
+		cfg.Kafka.AvatarTopic,
+		newAvatarConsumerGroupID,
 	)
 	consumer, err := kafkalib.NewConsumer(consumerConfig, metrics)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to create consumer: %v", err))
 	}
 
-	userHandler := user.New(dbRepo)
-	consumer.RegisterHandler(ctx, userHandler.Handler)
+	avatarHandler := avatar.New(dbRepo)
+	consumer.RegisterHandler(ctx, avatarHandler.Handler)
 
 	<-ctx.Done()
 }

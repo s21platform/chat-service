@@ -46,6 +46,8 @@ github.com/pierrec/lz4/v4 v4.1.22 h1:cKFw6uJDK+/gfw5BcDL0JL5aBsAFdsIT18eRtLj7VIU
 github.com/pierrec/lz4/v4 v4.1.22/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/s21platform/avatar-service v0.0.0-20250413162426-a937ac435e67 h1:G4mlRtDb6alTjyQCnpa3NKmLDMFo9R6TdK39Qsb92G0=
+github.com/s21platform/avatar-service v0.0.0-20250413162426-a937ac435e67/go.mod h1:lWVhJj2Sg6f7yk2b8vN8wU5AQX4WE4bJYaIZCosV5cw=
 github.com/s21platform/kafka-lib v1.0.2 h1:0g7kU82tKDALkm7ayjtGE1IhvwZwXl/u20YFXgSf4tM=
 github.com/s21platform/kafka-lib v1.0.2/go.mod h1:tmLv0RuMll1rznHyvVU7fSKZCNcZuKdR28bq5mJfjB8=
 github.com/s21platform/logger-lib v0.0.6 h1:Aa3wV7zsaUSUkLa4P8stKNKxmKpZEn9dNBsk00I7Ncw=
