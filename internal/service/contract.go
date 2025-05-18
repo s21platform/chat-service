@@ -8,16 +8,16 @@ import (
 )
 
 type DBRepo interface {
-	CreatePrivateChat() (string, error)
-	AddPrivateChatMember(chatUUID string, member *model.ChatMemberParams) error
-	GetPrivateChats(userUUID string) (*model.ChatInfoList, error)
-	GetGroupChats(userUUID string) (*model.ChatInfoList, error)
-	GetPrivateRecentMessages(chatUUID string, userUUID string) (*model.MessageList, error)
-	DeletePrivateMessage(userUUID, messageID, mode string) (bool, error)
-	GetPrivateDeletionInfo(messageID string) (*model.DeletionInfo, error)
-	EditPrivateMessage(messageUUID string, newContent string) (*model.EditedMessage, error)
-	IsChatMember(chatUUID, userUUID string) (bool, error)
-	IsMessageOwner(chatUUID, messageUUID, userUUID string) (bool, error)
+	CreatePrivateChat(ctx context.Context) (string, error)
+	AddPrivateChatMember(ctx context.Context, chatUUID string, member *model.ChatMemberParams) error
+	GetPrivateChats(ctx context.Context, userUUID string) (*model.ChatInfoList, error)
+	GetGroupChats(ctx context.Context, userUUID string) (*model.ChatInfoList, error)
+	GetPrivateRecentMessages(ctx context.Context, chatUUID string, userUUID string) (*model.MessageList, error)
+	DeletePrivateMessage(ctx context.Context, userUUID, messageID, mode string) (bool, error)
+	GetPrivateDeletionInfo(ctx context.Context, messageID string) (*model.DeletionInfo, error)
+	EditPrivateMessage(ctx context.Context, messageUUID string, newContent string) (*model.EditedMessage, error)
+	IsChatMember(ctx context.Context, chatUUID, userUUID string) (bool, error)
+	IsMessageOwner(ctx context.Context, chatUUID, messageUUID, userUUID string) (bool, error)
 }
 
 type UserClient interface {

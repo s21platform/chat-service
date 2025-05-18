@@ -51,11 +51,11 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat().
+		mockRepo.EXPECT().CreatePrivateChat(ctx).
 			Return("chat_uuid", nil)
-		mockRepo.EXPECT().AddPrivateChatMember(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().AddPrivateChatMember(ctx, gomock.Any(), gomock.Any()).
 			Return(nil)
-		mockRepo.EXPECT().AddPrivateChatMember(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().AddPrivateChatMember(ctx, gomock.Any(), gomock.Any()).
 			Return(nil)
 
 		chatUUID, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
@@ -133,7 +133,7 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat().
+		mockRepo.EXPECT().CreatePrivateChat(ctx).
 			Return("", fmt.Errorf("failed to create chat"))
 
 		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
@@ -160,10 +160,10 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat().
+		mockRepo.EXPECT().CreatePrivateChat(ctx).
 			Return("chat_uuid", nil)
 
-		mockRepo.EXPECT().AddPrivateChatMember("chat_uuid", gomock.Any()).
+		mockRepo.EXPECT().AddPrivateChatMember(ctx, "chat_uuid", gomock.Any()).
 			Return(fmt.Errorf("failed to add initiator"))
 
 		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
@@ -190,13 +190,13 @@ func TestServer_CreatePrivateChat(t *testing.T) {
 				AvatarLink: "test_avatar_link",
 			}, nil)
 
-		mockRepo.EXPECT().CreatePrivateChat().
+		mockRepo.EXPECT().CreatePrivateChat(ctx).
 			Return("chat_uuid", nil)
 
-		mockRepo.EXPECT().AddPrivateChatMember("chat_uuid", gomock.Any()).
+		mockRepo.EXPECT().AddPrivateChatMember(ctx, "chat_uuid", gomock.Any()).
 			Return(nil)
 
-		mockRepo.EXPECT().AddPrivateChatMember("chat_uuid", gomock.Any()).
+		mockRepo.EXPECT().AddPrivateChatMember(ctx, "chat_uuid", gomock.Any()).
 			Return(fmt.Errorf("failed to add companion"))
 
 		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
@@ -249,7 +249,7 @@ func TestServer_GetPrivateRecentMessages(t *testing.T) {
 			},
 		}
 
-		mockRepo.EXPECT().GetPrivateRecentMessages(chatUUID, userUUID).Return(expectedMessages, nil)
+		mockRepo.EXPECT().GetPrivateRecentMessages(ctx, chatUUID, userUUID).Return(expectedMessages, nil)
 
 		messages, err := s.GetPrivateRecentMessages(ctx, &chat.GetPrivateRecentMessagesIn{
 			ChatUuid: chatUUID,
@@ -278,7 +278,7 @@ func TestServer_GetPrivateRecentMessages(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetRecentMessages")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().GetPrivateRecentMessages(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to fetch chat"))
+		mockRepo.EXPECT().GetPrivateRecentMessages(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to fetch chat"))
 
 		_, err := s.GetPrivateRecentMessages(ctx, &chat.GetPrivateRecentMessagesIn{
 			ChatUuid: chatUUID,
@@ -314,13 +314,13 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
 			Return(true, nil)
 
 		deletionInfo := &model.DeletionInfo{}
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).Return(deletionInfo, nil)
 
-		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
 			Return(true, nil)
 
 		updatedMessage := &model.EditedMessage{
@@ -328,7 +328,7 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 			Content:     newContent,
 			UpdateAt:    updateAt,
 		}
-		mockRepo.EXPECT().EditPrivateMessage(messageUUID.String(), newContent).Return(updatedMessage, nil)
+		mockRepo.EXPECT().EditPrivateMessage(ctx, messageUUID.String(), newContent).Return(updatedMessage, nil)
 
 		response, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
 			ChatUuid:    chatUUID,
@@ -361,7 +361,7 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
 			Return(false, fmt.Errorf("failed to check user in chat"))
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
@@ -378,7 +378,7 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
 			Return(false, nil)
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
@@ -395,10 +395,10 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
 			Return(true, nil)
 
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
 			Return(nil, fmt.Errorf("failed to check deletion status"))
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
@@ -415,10 +415,10 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(gomock.Any(), gomock.Any()).
+		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
 			Return(true, nil)
 
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
 			Return(&model.DeletionInfo{
 				DeletedAt: "time",
 			}, nil)
@@ -430,23 +430,23 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "attempt to edit deleted message")
+		assert.Contains(t, err.Error(), "failed to edit deleted message")
 	})
 
 	t.Run("DB_error", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
 			Return(true, nil)
 
 		deletionInfo := &model.DeletionInfo{}
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).Return(deletionInfo, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).Return(deletionInfo, nil)
 
-		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
 			Return(true, nil)
 
-		mockRepo.EXPECT().EditPrivateMessage(messageUUID.String(), newContent).Return(nil, fmt.Errorf("failed to edit private message"))
+		mockRepo.EXPECT().EditPrivateMessage(ctx, messageUUID.String(), newContent).Return(nil, fmt.Errorf("failed to edit private message"))
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
 			ChatUuid:    chatUUID,
@@ -462,13 +462,13 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error("failed to user is not message owner")
 
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
 			Return(true, nil)
 
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
 			Return(&model.DeletionInfo{}, nil)
 
-		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
 			Return(false, nil)
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
@@ -485,13 +485,13 @@ func TestServer_EditPrivateMessage(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
 			Return(true, nil)
 
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID.String()).
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
 			Return(&model.DeletionInfo{}, nil)
 
-		mockRepo.EXPECT().IsMessageOwner(chatUUID, messageUUID.String(), userUUID).
+		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
 			Return(false, fmt.Errorf("some DB error"))
 
 		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
@@ -547,8 +547,8 @@ func TestServer_GetChats(t *testing.T) {
 			},
 		}
 
-		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(expPrivateChats, nil)
-		mockRepo.EXPECT().GetGroupChats(userUUID).Return(expGroupChats, nil)
+		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(expPrivateChats, nil)
+		mockRepo.EXPECT().GetGroupChats(ctx, userUUID).Return(expGroupChats, nil)
 
 		chats, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
@@ -574,7 +574,7 @@ func TestServer_GetChats(t *testing.T) {
 
 		mockLogger.EXPECT().AddFuncName("GetChats")
 		mockLogger.EXPECT().Error(gomock.Any())
-		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(nil, expectedErr)
+		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(nil, expectedErr)
 
 		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
@@ -587,8 +587,8 @@ func TestServer_GetChats(t *testing.T) {
 
 		mockLogger.EXPECT().AddFuncName("GetChats")
 		mockLogger.EXPECT().Error(gomock.Any())
-		mockRepo.EXPECT().GetPrivateChats(userUUID).Return(&model.ChatInfoList{}, nil)
-		mockRepo.EXPECT().GetGroupChats(userUUID).Return(nil, expectedErr)
+		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(&model.ChatInfoList{}, nil)
+		mockRepo.EXPECT().GetGroupChats(ctx, userUUID).Return(nil, expectedErr)
 
 		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
 
@@ -619,13 +619,13 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 
 	t.Run("success_self_to_all", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID).Return(&model.DeletionInfo{
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{
 			DeletedBy:    uuid.New().String(),
 			DeleteFormat: model.Self,
 			DeletedAt:    time.Now().Format(time.RFC3339),
 		}, nil)
-		mockRepo.EXPECT().DeletePrivateMessage(userUUID, messageUUID, model.All).Return(true, nil)
+		mockRepo.EXPECT().DeletePrivateMessage(ctx, userUUID, messageUUID, model.All).Return(true, nil)
 
 		isDeleted, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
 			ChatUuid:    chatUUID,
@@ -639,9 +639,9 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 
 	t.Run("success_direct_all", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID).Return(&model.DeletionInfo{}, nil)
-		mockRepo.EXPECT().DeletePrivateMessage(userUUID, messageUUID, model.All).Return(true, nil)
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{}, nil)
+		mockRepo.EXPECT().DeletePrivateMessage(ctx, userUUID, messageUUID, model.All).Return(true, nil)
 
 		isDeleted, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
 			ChatUuid:    chatUUID,
@@ -670,7 +670,7 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 
 	t.Run("not_chat_member", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(false, nil)
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(false, nil)
 		mockLogger.EXPECT().Error("failed to user is not chat member")
 
 		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
@@ -686,7 +686,7 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 	t.Run("is_chat_member_error", func(t *testing.T) {
 		expectedErr := fmt.Errorf("db error")
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(false, expectedErr)
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(false, expectedErr)
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to check if user is chat member: %v", expectedErr))
 
 		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
@@ -696,12 +696,12 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 		})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to check if user is chat member")
+		assert.Contains(t, err.Error(), "failed to check user is chat member")
 	})
 
 	t.Run("invalid_mode", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to invalid mode: %s", "invalid"))
 
 		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
@@ -716,8 +716,8 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 
 	t.Run("already_deleted_all", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID).Return(&model.DeletionInfo{
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{
 			DeletedBy:    uuid.New().String(),
 			DeleteFormat: model.All,
 			DeletedAt:    time.Now().Format(time.RFC3339),
@@ -736,8 +736,8 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 
 	t.Run("already_deleted_self_by_user", func(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID).Return(&model.DeletionInfo{
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{
 			DeletedBy:    userUUID,
 			DeleteFormat: model.Self,
 			DeletedAt:    time.Now().Format(time.RFC3339),
@@ -757,8 +757,8 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 	t.Run("get_deletion_info_error", func(t *testing.T) {
 		expectedErr := fmt.Errorf("db error")
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID).Return(nil, expectedErr)
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(nil, expectedErr)
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get private message deletion info: %v", expectedErr))
 
 		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
@@ -774,9 +774,9 @@ func TestServer_DeletePrivateMessage(t *testing.T) {
 	t.Run("delete_message_error", func(t *testing.T) {
 		expectedErr := fmt.Errorf("db error")
 		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(messageUUID).Return(&model.DeletionInfo{}, nil)
-		mockRepo.EXPECT().DeletePrivateMessage(userUUID, messageUUID, model.All).Return(false, expectedErr)
+		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{}, nil)
+		mockRepo.EXPECT().DeletePrivateMessage(ctx, userUUID, messageUUID, model.All).Return(false, expectedErr)
 		mockLogger.EXPECT().Error(fmt.Sprintf("failed to delete private message: %v", expectedErr))
 
 		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
