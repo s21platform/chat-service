@@ -9,6 +9,7 @@ package chat
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -20,42 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ChatEmpty struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *ChatEmpty) Reset() {
-	*x = ChatEmpty{}
-	mi := &file_api_chat_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ChatEmpty) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ChatEmpty) ProtoMessage() {}
-
-func (x *ChatEmpty) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ChatEmpty.ProtoReflect.Descriptor instead.
-func (*ChatEmpty) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{0}
-}
-
 type CreatePrivateChatIn struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -66,7 +31,7 @@ type CreatePrivateChatIn struct {
 
 func (x *CreatePrivateChatIn) Reset() {
 	*x = CreatePrivateChatIn{}
-	mi := &file_api_chat_proto_msgTypes[1]
+	mi := &file_api_chat_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -78,7 +43,7 @@ func (x *CreatePrivateChatIn) String() string {
 func (*CreatePrivateChatIn) ProtoMessage() {}
 
 func (x *CreatePrivateChatIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[1]
+	mi := &file_api_chat_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -91,7 +56,7 @@ func (x *CreatePrivateChatIn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePrivateChatIn.ProtoReflect.Descriptor instead.
 func (*CreatePrivateChatIn) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{1}
+	return file_api_chat_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CreatePrivateChatIn) GetCompanionUuid() string {
@@ -111,7 +76,7 @@ type CreatePrivateChatOut struct {
 
 func (x *CreatePrivateChatOut) Reset() {
 	*x = CreatePrivateChatOut{}
-	mi := &file_api_chat_proto_msgTypes[2]
+	mi := &file_api_chat_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -123,7 +88,7 @@ func (x *CreatePrivateChatOut) String() string {
 func (*CreatePrivateChatOut) ProtoMessage() {}
 
 func (x *CreatePrivateChatOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[2]
+	mi := &file_api_chat_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -136,7 +101,7 @@ func (x *CreatePrivateChatOut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePrivateChatOut.ProtoReflect.Descriptor instead.
 func (*CreatePrivateChatOut) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{2}
+	return file_api_chat_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CreatePrivateChatOut) GetNewChatUuid() string {
@@ -160,7 +125,7 @@ type Chat struct {
 
 func (x *Chat) Reset() {
 	*x = Chat{}
-	mi := &file_api_chat_proto_msgTypes[3]
+	mi := &file_api_chat_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -172,7 +137,7 @@ func (x *Chat) String() string {
 func (*Chat) ProtoMessage() {}
 
 func (x *Chat) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[3]
+	mi := &file_api_chat_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -185,7 +150,7 @@ func (x *Chat) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Chat.ProtoReflect.Descriptor instead.
 func (*Chat) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{3}
+	return file_api_chat_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Chat) GetLastMessage() string {
@@ -233,7 +198,7 @@ type GetChatsOut struct {
 
 func (x *GetChatsOut) Reset() {
 	*x = GetChatsOut{}
-	mi := &file_api_chat_proto_msgTypes[4]
+	mi := &file_api_chat_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -245,7 +210,7 @@ func (x *GetChatsOut) String() string {
 func (*GetChatsOut) ProtoMessage() {}
 
 func (x *GetChatsOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[4]
+	mi := &file_api_chat_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -258,7 +223,7 @@ func (x *GetChatsOut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatsOut.ProtoReflect.Descriptor instead.
 func (*GetChatsOut) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{4}
+	return file_api_chat_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetChatsOut) GetChats() []*Chat {
@@ -283,7 +248,7 @@ type Message struct {
 
 func (x *Message) Reset() {
 	*x = Message{}
-	mi := &file_api_chat_proto_msgTypes[5]
+	mi := &file_api_chat_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -295,7 +260,7 @@ func (x *Message) String() string {
 func (*Message) ProtoMessage() {}
 
 func (x *Message) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[5]
+	mi := &file_api_chat_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -308,7 +273,7 @@ func (x *Message) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Message.ProtoReflect.Descriptor instead.
 func (*Message) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{5}
+	return file_api_chat_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Message) GetUuid() string {
@@ -363,7 +328,7 @@ type GetPrivateRecentMessagesIn struct {
 
 func (x *GetPrivateRecentMessagesIn) Reset() {
 	*x = GetPrivateRecentMessagesIn{}
-	mi := &file_api_chat_proto_msgTypes[6]
+	mi := &file_api_chat_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -375,7 +340,7 @@ func (x *GetPrivateRecentMessagesIn) String() string {
 func (*GetPrivateRecentMessagesIn) ProtoMessage() {}
 
 func (x *GetPrivateRecentMessagesIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[6]
+	mi := &file_api_chat_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -388,7 +353,7 @@ func (x *GetPrivateRecentMessagesIn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPrivateRecentMessagesIn.ProtoReflect.Descriptor instead.
 func (*GetPrivateRecentMessagesIn) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{6}
+	return file_api_chat_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetPrivateRecentMessagesIn) GetChatUuid() string {
@@ -408,7 +373,7 @@ type GetPrivateRecentMessagesOut struct {
 
 func (x *GetPrivateRecentMessagesOut) Reset() {
 	*x = GetPrivateRecentMessagesOut{}
-	mi := &file_api_chat_proto_msgTypes[7]
+	mi := &file_api_chat_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -420,7 +385,7 @@ func (x *GetPrivateRecentMessagesOut) String() string {
 func (*GetPrivateRecentMessagesOut) ProtoMessage() {}
 
 func (x *GetPrivateRecentMessagesOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[7]
+	mi := &file_api_chat_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -433,7 +398,7 @@ func (x *GetPrivateRecentMessagesOut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPrivateRecentMessagesOut.ProtoReflect.Descriptor instead.
 func (*GetPrivateRecentMessagesOut) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{7}
+	return file_api_chat_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetPrivateRecentMessagesOut) GetMessages() []*Message {
@@ -455,7 +420,7 @@ type DeletePrivateMessageIn struct {
 
 func (x *DeletePrivateMessageIn) Reset() {
 	*x = DeletePrivateMessageIn{}
-	mi := &file_api_chat_proto_msgTypes[8]
+	mi := &file_api_chat_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -467,7 +432,7 @@ func (x *DeletePrivateMessageIn) String() string {
 func (*DeletePrivateMessageIn) ProtoMessage() {}
 
 func (x *DeletePrivateMessageIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[8]
+	mi := &file_api_chat_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -480,7 +445,7 @@ func (x *DeletePrivateMessageIn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePrivateMessageIn.ProtoReflect.Descriptor instead.
 func (*DeletePrivateMessageIn) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{8}
+	return file_api_chat_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DeletePrivateMessageIn) GetChatUuid() string {
@@ -514,7 +479,7 @@ type DeletePrivateMessageOut struct {
 
 func (x *DeletePrivateMessageOut) Reset() {
 	*x = DeletePrivateMessageOut{}
-	mi := &file_api_chat_proto_msgTypes[9]
+	mi := &file_api_chat_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -526,7 +491,7 @@ func (x *DeletePrivateMessageOut) String() string {
 func (*DeletePrivateMessageOut) ProtoMessage() {}
 
 func (x *DeletePrivateMessageOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[9]
+	mi := &file_api_chat_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -539,7 +504,7 @@ func (x *DeletePrivateMessageOut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePrivateMessageOut.ProtoReflect.Descriptor instead.
 func (*DeletePrivateMessageOut) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{9}
+	return file_api_chat_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeletePrivateMessageOut) GetDeletionStatus() bool {
@@ -561,7 +526,7 @@ type EditPrivateMessageIn struct {
 
 func (x *EditPrivateMessageIn) Reset() {
 	*x = EditPrivateMessageIn{}
-	mi := &file_api_chat_proto_msgTypes[10]
+	mi := &file_api_chat_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -573,7 +538,7 @@ func (x *EditPrivateMessageIn) String() string {
 func (*EditPrivateMessageIn) ProtoMessage() {}
 
 func (x *EditPrivateMessageIn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[10]
+	mi := &file_api_chat_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -586,7 +551,7 @@ func (x *EditPrivateMessageIn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EditPrivateMessageIn.ProtoReflect.Descriptor instead.
 func (*EditPrivateMessageIn) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{10}
+	return file_api_chat_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *EditPrivateMessageIn) GetChatUuid() string {
@@ -622,7 +587,7 @@ type EditPrivateMessageOut struct {
 
 func (x *EditPrivateMessageOut) Reset() {
 	*x = EditPrivateMessageOut{}
-	mi := &file_api_chat_proto_msgTypes[11]
+	mi := &file_api_chat_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -634,7 +599,7 @@ func (x *EditPrivateMessageOut) String() string {
 func (*EditPrivateMessageOut) ProtoMessage() {}
 
 func (x *EditPrivateMessageOut) ProtoReflect() protoreflect.Message {
-	mi := &file_api_chat_proto_msgTypes[11]
+	mi := &file_api_chat_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -647,7 +612,7 @@ func (x *EditPrivateMessageOut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EditPrivateMessageOut.ProtoReflect.Descriptor instead.
 func (*EditPrivateMessageOut) Descriptor() ([]byte, []int) {
-	return file_api_chat_proto_rawDescGZIP(), []int{11}
+	return file_api_chat_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *EditPrivateMessageOut) GetMessageUuid() string {
@@ -675,7 +640,8 @@ var File_api_chat_proto protoreflect.FileDescriptor
 
 var file_api_chat_proto_rawDesc = []byte{
 	0x0a, 0x0e, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0x0b, 0x0a, 0x09, 0x43, 0x68, 0x61, 0x74, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x3c, 0x0a,
+	0x1a, 0x1b, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2f, 0x65, 0x6d, 0x70, 0x74, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x3c, 0x0a,
 	0x13, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x43, 0x68,
 	0x61, 0x74, 0x49, 0x6e, 0x12, 0x25, 0x0a, 0x0e, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x6e, 0x69, 0x6f,
 	0x6e, 0x5f, 0x75, 0x75, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x63, 0x6f,
@@ -743,31 +709,31 @@ var file_api_chat_proto_rawDesc = []byte{
 	0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6e, 0x65, 0x77, 0x43,
 	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65,
 	0x64, 0x5f, 0x61, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x64, 0x41, 0x74, 0x32, 0xe6, 0x02, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x53, 0x65,
+	0x74, 0x65, 0x64, 0x41, 0x74, 0x32, 0xf2, 0x02, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x53, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x42, 0x0a, 0x11, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50,
 	0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x74, 0x12, 0x14, 0x2e, 0x43, 0x72, 0x65,
 	0x61, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x74, 0x49, 0x6e,
 	0x1a, 0x15, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65,
-	0x43, 0x68, 0x61, 0x74, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x26, 0x0a, 0x08, 0x47, 0x65, 0x74,
-	0x43, 0x68, 0x61, 0x74, 0x73, 0x12, 0x0a, 0x2e, 0x43, 0x68, 0x61, 0x74, 0x45, 0x6d, 0x70, 0x74,
-	0x79, 0x1a, 0x0c, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x74, 0x73, 0x4f, 0x75, 0x74, 0x22,
-	0x00, 0x12, 0x57, 0x0a, 0x18, 0x47, 0x65, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x52,
-	0x65, 0x63, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x12, 0x1b, 0x2e,
-	0x47, 0x65, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x52, 0x65, 0x63, 0x65, 0x6e, 0x74,
-	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x49, 0x6e, 0x1a, 0x1c, 0x2e, 0x47, 0x65, 0x74,
-	0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x52, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x73, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x4b, 0x0a, 0x14, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x12, 0x17, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61,
-	0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x1a, 0x18, 0x2e, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x45, 0x0a, 0x12, 0x45, 0x64, 0x69, 0x74, 0x50,
-	0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x15, 0x2e,
-	0x45, 0x64, 0x69, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x49, 0x6e, 0x1a, 0x16, 0x2e, 0x45, 0x64, 0x69, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61,
-	0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x42, 0x0a,
-	0x5a, 0x08, 0x70, 0x6b, 0x67, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x43, 0x68, 0x61, 0x74, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x32, 0x0a, 0x08, 0x47, 0x65, 0x74,
+	0x43, 0x68, 0x61, 0x74, 0x73, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x0c, 0x2e,
+	0x47, 0x65, 0x74, 0x43, 0x68, 0x61, 0x74, 0x73, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x57, 0x0a,
+	0x18, 0x47, 0x65, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x52, 0x65, 0x63, 0x65, 0x6e,
+	0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x12, 0x1b, 0x2e, 0x47, 0x65, 0x74, 0x50,
+	0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x52, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x73, 0x49, 0x6e, 0x1a, 0x1c, 0x2e, 0x47, 0x65, 0x74, 0x50, 0x72, 0x69, 0x76,
+	0x61, 0x74, 0x65, 0x52, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x73, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x12, 0x4b, 0x0a, 0x14, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
+	0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x17,
+	0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x1a, 0x18, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
+	0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x75,
+	0x74, 0x22, 0x00, 0x12, 0x45, 0x0a, 0x12, 0x45, 0x64, 0x69, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61,
+	0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x15, 0x2e, 0x45, 0x64, 0x69, 0x74,
+	0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x6e,
+	0x1a, 0x16, 0x2e, 0x45, 0x64, 0x69, 0x74, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x75, 0x74, 0x22, 0x00, 0x42, 0x0a, 0x5a, 0x08, 0x70, 0x6b,
+	0x67, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -782,34 +748,34 @@ func file_api_chat_proto_rawDescGZIP() []byte {
 	return file_api_chat_proto_rawDescData
 }
 
-var file_api_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_api_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_api_chat_proto_goTypes = []any{
-	(*ChatEmpty)(nil),                   // 0: ChatEmpty
-	(*CreatePrivateChatIn)(nil),         // 1: CreatePrivateChatIn
-	(*CreatePrivateChatOut)(nil),        // 2: CreatePrivateChatOut
-	(*Chat)(nil),                        // 3: Chat
-	(*GetChatsOut)(nil),                 // 4: GetChatsOut
-	(*Message)(nil),                     // 5: Message
-	(*GetPrivateRecentMessagesIn)(nil),  // 6: GetPrivateRecentMessagesIn
-	(*GetPrivateRecentMessagesOut)(nil), // 7: GetPrivateRecentMessagesOut
-	(*DeletePrivateMessageIn)(nil),      // 8: DeletePrivateMessageIn
-	(*DeletePrivateMessageOut)(nil),     // 9: DeletePrivateMessageOut
-	(*EditPrivateMessageIn)(nil),        // 10: EditPrivateMessageIn
-	(*EditPrivateMessageOut)(nil),       // 11: EditPrivateMessageOut
+	(*CreatePrivateChatIn)(nil),         // 0: CreatePrivateChatIn
+	(*CreatePrivateChatOut)(nil),        // 1: CreatePrivateChatOut
+	(*Chat)(nil),                        // 2: Chat
+	(*GetChatsOut)(nil),                 // 3: GetChatsOut
+	(*Message)(nil),                     // 4: Message
+	(*GetPrivateRecentMessagesIn)(nil),  // 5: GetPrivateRecentMessagesIn
+	(*GetPrivateRecentMessagesOut)(nil), // 6: GetPrivateRecentMessagesOut
+	(*DeletePrivateMessageIn)(nil),      // 7: DeletePrivateMessageIn
+	(*DeletePrivateMessageOut)(nil),     // 8: DeletePrivateMessageOut
+	(*EditPrivateMessageIn)(nil),        // 9: EditPrivateMessageIn
+	(*EditPrivateMessageOut)(nil),       // 10: EditPrivateMessageOut
+	(*emptypb.Empty)(nil),               // 11: google.protobuf.Empty
 }
 var file_api_chat_proto_depIdxs = []int32{
-	3,  // 0: GetChatsOut.chats:type_name -> Chat
-	5,  // 1: GetPrivateRecentMessagesOut.messages:type_name -> Message
-	1,  // 2: ChatService.CreatePrivateChat:input_type -> CreatePrivateChatIn
-	0,  // 3: ChatService.GetChats:input_type -> ChatEmpty
-	6,  // 4: ChatService.GetPrivateRecentMessages:input_type -> GetPrivateRecentMessagesIn
-	8,  // 5: ChatService.DeletePrivateMessage:input_type -> DeletePrivateMessageIn
-	10, // 6: ChatService.EditPrivateMessage:input_type -> EditPrivateMessageIn
-	2,  // 7: ChatService.CreatePrivateChat:output_type -> CreatePrivateChatOut
-	4,  // 8: ChatService.GetChats:output_type -> GetChatsOut
-	7,  // 9: ChatService.GetPrivateRecentMessages:output_type -> GetPrivateRecentMessagesOut
-	9,  // 10: ChatService.DeletePrivateMessage:output_type -> DeletePrivateMessageOut
-	11, // 11: ChatService.EditPrivateMessage:output_type -> EditPrivateMessageOut
+	2,  // 0: GetChatsOut.chats:type_name -> Chat
+	4,  // 1: GetPrivateRecentMessagesOut.messages:type_name -> Message
+	0,  // 2: ChatService.CreatePrivateChat:input_type -> CreatePrivateChatIn
+	11, // 3: ChatService.GetChats:input_type -> google.protobuf.Empty
+	5,  // 4: ChatService.GetPrivateRecentMessages:input_type -> GetPrivateRecentMessagesIn
+	7,  // 5: ChatService.DeletePrivateMessage:input_type -> DeletePrivateMessageIn
+	9,  // 6: ChatService.EditPrivateMessage:input_type -> EditPrivateMessageIn
+	1,  // 7: ChatService.CreatePrivateChat:output_type -> CreatePrivateChatOut
+	3,  // 8: ChatService.GetChats:output_type -> GetChatsOut
+	6,  // 9: ChatService.GetPrivateRecentMessages:output_type -> GetPrivateRecentMessagesOut
+	8,  // 10: ChatService.DeletePrivateMessage:output_type -> DeletePrivateMessageOut
+	10, // 11: ChatService.EditPrivateMessage:output_type -> EditPrivateMessageOut
 	7,  // [7:12] is the sub-list for method output_type
 	2,  // [2:7] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
@@ -828,7 +794,7 @@ func file_api_chat_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_chat_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

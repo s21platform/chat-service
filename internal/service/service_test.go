@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	logger_lib "github.com/s21platform/logger-lib"
 
@@ -550,7 +551,7 @@ func TestServer_GetChats(t *testing.T) {
 		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(expPrivateChats, nil)
 		mockRepo.EXPECT().GetGroupChats(ctx, userUUID).Return(expGroupChats, nil)
 
-		chats, err := s.GetChats(ctx, &chat.ChatEmpty{})
+		chats, err := s.GetChats(ctx, &emptypb.Empty{})
 
 		assert.NoError(t, err)
 		assert.NotNil(t, chats)
@@ -563,7 +564,7 @@ func TestServer_GetChats(t *testing.T) {
 		mockLogger.EXPECT().AddFuncName("GetChats")
 		mockLogger.EXPECT().Error("failed to find userUUID")
 
-		_, err := s.GetChats(badCtx, &chat.ChatEmpty{})
+		_, err := s.GetChats(badCtx, &emptypb.Empty{})
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to find userUUID")
@@ -576,7 +577,7 @@ func TestServer_GetChats(t *testing.T) {
 		mockLogger.EXPECT().Error(gomock.Any())
 		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(nil, expectedErr)
 
-		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
+		_, err := s.GetChats(ctx, &emptypb.Empty{})
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), expectedErr.Error())
@@ -590,7 +591,7 @@ func TestServer_GetChats(t *testing.T) {
 		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(&model.ChatInfoList{}, nil)
 		mockRepo.EXPECT().GetGroupChats(ctx, userUUID).Return(nil, expectedErr)
 
-		_, err := s.GetChats(ctx, &chat.ChatEmpty{})
+		_, err := s.GetChats(ctx, &emptypb.Empty{})
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), expectedErr.Error())

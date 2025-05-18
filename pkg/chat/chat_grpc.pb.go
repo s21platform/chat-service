@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -31,7 +32,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
 	CreatePrivateChat(ctx context.Context, in *CreatePrivateChatIn, opts ...grpc.CallOption) (*CreatePrivateChatOut, error)
-	GetChats(ctx context.Context, in *ChatEmpty, opts ...grpc.CallOption) (*GetChatsOut, error)
+	GetChats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetChatsOut, error)
 	GetPrivateRecentMessages(ctx context.Context, in *GetPrivateRecentMessagesIn, opts ...grpc.CallOption) (*GetPrivateRecentMessagesOut, error)
 	DeletePrivateMessage(ctx context.Context, in *DeletePrivateMessageIn, opts ...grpc.CallOption) (*DeletePrivateMessageOut, error)
 	EditPrivateMessage(ctx context.Context, in *EditPrivateMessageIn, opts ...grpc.CallOption) (*EditPrivateMessageOut, error)
@@ -55,7 +56,7 @@ func (c *chatServiceClient) CreatePrivateChat(ctx context.Context, in *CreatePri
 	return out, nil
 }
 
-func (c *chatServiceClient) GetChats(ctx context.Context, in *ChatEmpty, opts ...grpc.CallOption) (*GetChatsOut, error) {
+func (c *chatServiceClient) GetChats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetChatsOut, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetChatsOut)
 	err := c.cc.Invoke(ctx, ChatService_GetChats_FullMethodName, in, out, cOpts...)
@@ -100,7 +101,7 @@ func (c *chatServiceClient) EditPrivateMessage(ctx context.Context, in *EditPriv
 // for forward compatibility.
 type ChatServiceServer interface {
 	CreatePrivateChat(context.Context, *CreatePrivateChatIn) (*CreatePrivateChatOut, error)
-	GetChats(context.Context, *ChatEmpty) (*GetChatsOut, error)
+	GetChats(context.Context, *emptypb.Empty) (*GetChatsOut, error)
 	GetPrivateRecentMessages(context.Context, *GetPrivateRecentMessagesIn) (*GetPrivateRecentMessagesOut, error)
 	DeletePrivateMessage(context.Context, *DeletePrivateMessageIn) (*DeletePrivateMessageOut, error)
 	EditPrivateMessage(context.Context, *EditPrivateMessageIn) (*EditPrivateMessageOut, error)
@@ -117,7 +118,7 @@ type UnimplementedChatServiceServer struct{}
 func (UnimplementedChatServiceServer) CreatePrivateChat(context.Context, *CreatePrivateChatIn) (*CreatePrivateChatOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePrivateChat not implemented")
 }
-func (UnimplementedChatServiceServer) GetChats(context.Context, *ChatEmpty) (*GetChatsOut, error) {
+func (UnimplementedChatServiceServer) GetChats(context.Context, *emptypb.Empty) (*GetChatsOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChats not implemented")
 }
 func (UnimplementedChatServiceServer) GetPrivateRecentMessages(context.Context, *GetPrivateRecentMessagesIn) (*GetPrivateRecentMessagesOut, error) {
@@ -169,7 +170,7 @@ func _ChatService_CreatePrivateChat_Handler(srv interface{}, ctx context.Context
 }
 
 func _ChatService_GetChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChatEmpty)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -181,7 +182,7 @@ func _ChatService_GetChats_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: ChatService_GetChats_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetChats(ctx, req.(*ChatEmpty))
+		return srv.(ChatServiceServer).GetChats(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
