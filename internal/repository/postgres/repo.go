@@ -324,7 +324,7 @@ func (r *Repository) UpdateUserAvatar(ctx context.Context, userUUID, avatarLink 
 
 	_, err = r.connection.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to update user nickname in db: %v", err)
+		return fmt.Errorf("failed to update user avatar in db: %v", err)
 	}
 
 	return nil
