@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS streams
 (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type       stream_type NOT NULL,
-    metadata   JSONB        NOT NULL,
+    metadata   JSONB,
     created_at TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
     created_by UUID,
     FOREIGN KEY (created_by) REFERENCES users (id)

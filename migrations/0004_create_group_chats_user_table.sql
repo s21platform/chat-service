@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS messages
     delete_format delete_format_type,
     deleted_by    UUID,
     FOREIGN KEY (stream_id) REFERENCES streams (id),
-    FOREIGN KEY (stream_id, sender_id) REFERENCES stream_members (stream_id, sender_id),
+    FOREIGN KEY (stream_id, sender_id) REFERENCES stream_members (stream_id, user_id),
     FOREIGN KEY (root_id) REFERENCES messages (id),
     FOREIGN KEY (parent_id) REFERENCES messages (id),
     FOREIGN KEY (stream_id, deleted_by) REFERENCES stream_members (stream_id, user_id)
