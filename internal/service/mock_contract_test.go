@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/s21platform/chat-service/internal/model"
+	chat "github.com/s21platform/chat-service/pkg/chat"
 )
 
 // MockDBRepo is a mock of DBRepo interface.
@@ -35,153 +36,177 @@ func (m *MockDBRepo) EXPECT() *MockDBRepoMockRecorder {
 	return m.recorder
 }
 
-// AddPrivateChatMember mocks base method.
-func (m *MockDBRepo) AddPrivateChatMember(ctx context.Context, chatUUID string, member *model.ChatMemberParams) error {
+// AddNewUser mocks base method.
+func (m *MockDBRepo) AddNewUser(ctx context.Context, userInfo *model.StreamMemberParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPrivateChatMember", ctx, chatUUID, member)
+	ret := m.ctrl.Call(m, "AddNewUser", ctx, userInfo)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AddPrivateChatMember indicates an expected call of AddPrivateChatMember.
-func (mr *MockDBRepoMockRecorder) AddPrivateChatMember(ctx, chatUUID, member interface{}) *gomock.Call {
+// AddNewUser indicates an expected call of AddNewUser.
+func (mr *MockDBRepoMockRecorder) AddNewUser(ctx, userInfo interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPrivateChatMember", reflect.TypeOf((*MockDBRepo)(nil).AddPrivateChatMember), ctx, chatUUID, member)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNewUser", reflect.TypeOf((*MockDBRepo)(nil).AddNewUser), ctx, userInfo)
 }
 
-// CreatePrivateChat mocks base method.
-func (m *MockDBRepo) CreatePrivateChat(ctx context.Context) (string, error) {
+// AddStreamMember mocks base method.
+func (m *MockDBRepo) AddStreamMember(ctx context.Context, streamID, userID, metadata string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePrivateChat", ctx)
+	ret := m.ctrl.Call(m, "AddStreamMember", ctx, streamID, userID, metadata)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddStreamMember indicates an expected call of AddStreamMember.
+func (mr *MockDBRepoMockRecorder) AddStreamMember(ctx, streamID, userID, metadata interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStreamMember", reflect.TypeOf((*MockDBRepo)(nil).AddStreamMember), ctx, streamID, userID, metadata)
+}
+
+// AddStreamMembers mocks base method.
+func (m *MockDBRepo) AddStreamMembers(ctx context.Context, streamID string, members []model.StreamMember) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddStreamMembers", ctx, streamID, members)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddStreamMembers indicates an expected call of AddStreamMembers.
+func (mr *MockDBRepoMockRecorder) AddStreamMembers(ctx, streamID, members interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStreamMembers", reflect.TypeOf((*MockDBRepo)(nil).AddStreamMembers), ctx, streamID, members)
+}
+
+// AddUserSubscription mocks base method.
+func (m *MockDBRepo) AddUserSubscription(ctx context.Context, userID, channel string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUserSubscription", ctx, userID, channel)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUserSubscription indicates an expected call of AddUserSubscription.
+func (mr *MockDBRepoMockRecorder) AddUserSubscription(ctx, userID, channel interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserSubscription", reflect.TypeOf((*MockDBRepo)(nil).AddUserSubscription), ctx, userID, channel)
+}
+
+// AddUserSubscriptions mocks base method.
+func (m *MockDBRepo) AddUserSubscriptions(ctx context.Context, subscriptions []model.UserSubscription) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUserSubscriptions", ctx, subscriptions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUserSubscriptions indicates an expected call of AddUserSubscriptions.
+func (mr *MockDBRepoMockRecorder) AddUserSubscriptions(ctx, subscriptions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserSubscriptions", reflect.TypeOf((*MockDBRepo)(nil).AddUserSubscriptions), ctx, subscriptions)
+}
+
+// CreateStream mocks base method.
+func (m *MockDBRepo) CreateStream(ctx context.Context, streamType, metadata, createdBy string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateStream", ctx, streamType, metadata, createdBy)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreatePrivateChat indicates an expected call of CreatePrivateChat.
-func (mr *MockDBRepoMockRecorder) CreatePrivateChat(ctx interface{}) *gomock.Call {
+// CreateStream indicates an expected call of CreateStream.
+func (mr *MockDBRepoMockRecorder) CreateStream(ctx, streamType, metadata, createdBy interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrivateChat", reflect.TypeOf((*MockDBRepo)(nil).CreatePrivateChat), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStream", reflect.TypeOf((*MockDBRepo)(nil).CreateStream), ctx, streamType, metadata, createdBy)
 }
 
-// DeletePrivateMessage mocks base method.
-func (m *MockDBRepo) DeletePrivateMessage(ctx context.Context, userUUID, messageID, mode string) (bool, error) {
+// GetPrivateStreams mocks base method.
+func (m *MockDBRepo) GetPrivateStreams(ctx context.Context, requesterID string) (*model.PrivateStreamPreviewList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePrivateMessage", ctx, userUUID, messageID, mode)
-	ret0, _ := ret[0].(bool)
+	ret := m.ctrl.Call(m, "GetPrivateStreams", ctx, requesterID)
+	ret0, _ := ret[0].(*model.PrivateStreamPreviewList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DeletePrivateMessage indicates an expected call of DeletePrivateMessage.
-func (mr *MockDBRepoMockRecorder) DeletePrivateMessage(ctx, userUUID, messageID, mode interface{}) *gomock.Call {
+// GetPrivateStreams indicates an expected call of GetPrivateStreams.
+func (mr *MockDBRepoMockRecorder) GetPrivateStreams(ctx, requesterID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).DeletePrivateMessage), ctx, userUUID, messageID, mode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateStreams", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateStreams), ctx, requesterID)
 }
 
-// EditPrivateMessage mocks base method.
-func (m *MockDBRepo) EditPrivateMessage(ctx context.Context, messageUUID, newContent string) (*model.EditedMessage, error) {
+// GetStreamRecentMessages mocks base method.
+func (m *MockDBRepo) GetStreamRecentMessages(ctx context.Context, streamID, offset string, limit int32) (*model.MessageList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EditPrivateMessage", ctx, messageUUID, newContent)
-	ret0, _ := ret[0].(*model.EditedMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// EditPrivateMessage indicates an expected call of EditPrivateMessage.
-func (mr *MockDBRepoMockRecorder) EditPrivateMessage(ctx, messageUUID, newContent interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditPrivateMessage", reflect.TypeOf((*MockDBRepo)(nil).EditPrivateMessage), ctx, messageUUID, newContent)
-}
-
-// GetGroupChats mocks base method.
-func (m *MockDBRepo) GetGroupChats(ctx context.Context, userUUID string) (*model.ChatInfoList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGroupChats", ctx, userUUID)
-	ret0, _ := ret[0].(*model.ChatInfoList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetGroupChats indicates an expected call of GetGroupChats.
-func (mr *MockDBRepoMockRecorder) GetGroupChats(ctx, userUUID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupChats", reflect.TypeOf((*MockDBRepo)(nil).GetGroupChats), ctx, userUUID)
-}
-
-// GetPrivateChats mocks base method.
-func (m *MockDBRepo) GetPrivateChats(ctx context.Context, userUUID string) (*model.ChatInfoList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPrivateChats", ctx, userUUID)
-	ret0, _ := ret[0].(*model.ChatInfoList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPrivateChats indicates an expected call of GetPrivateChats.
-func (mr *MockDBRepoMockRecorder) GetPrivateChats(ctx, userUUID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateChats", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateChats), ctx, userUUID)
-}
-
-// GetPrivateDeletionInfo mocks base method.
-func (m *MockDBRepo) GetPrivateDeletionInfo(ctx context.Context, messageID string) (*model.DeletionInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPrivateDeletionInfo", ctx, messageID)
-	ret0, _ := ret[0].(*model.DeletionInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPrivateDeletionInfo indicates an expected call of GetPrivateDeletionInfo.
-func (mr *MockDBRepoMockRecorder) GetPrivateDeletionInfo(ctx, messageID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateDeletionInfo", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateDeletionInfo), ctx, messageID)
-}
-
-// GetPrivateRecentMessages mocks base method.
-func (m *MockDBRepo) GetPrivateRecentMessages(ctx context.Context, chatUUID, userUUID string) (*model.MessageList, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPrivateRecentMessages", ctx, chatUUID, userUUID)
+	ret := m.ctrl.Call(m, "GetStreamRecentMessages", ctx, streamID, offset, limit)
 	ret0, _ := ret[0].(*model.MessageList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPrivateRecentMessages indicates an expected call of GetPrivateRecentMessages.
-func (mr *MockDBRepoMockRecorder) GetPrivateRecentMessages(ctx, chatUUID, userUUID interface{}) *gomock.Call {
+// GetStreamRecentMessages indicates an expected call of GetStreamRecentMessages.
+func (mr *MockDBRepoMockRecorder) GetStreamRecentMessages(ctx, streamID, offset, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPrivateRecentMessages", reflect.TypeOf((*MockDBRepo)(nil).GetPrivateRecentMessages), ctx, chatUUID, userUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStreamRecentMessages", reflect.TypeOf((*MockDBRepo)(nil).GetStreamRecentMessages), ctx, streamID, offset, limit)
 }
 
-// IsChatMember mocks base method.
-func (m *MockDBRepo) IsChatMember(ctx context.Context, chatUUID, userUUID string) (bool, error) {
+// GetUserActiveStreams mocks base method.
+func (m *MockDBRepo) GetUserActiveStreams(ctx context.Context, userID string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsChatMember", ctx, chatUUID, userUUID)
+	ret := m.ctrl.Call(m, "GetUserActiveStreams", ctx, userID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserActiveStreams indicates an expected call of GetUserActiveStreams.
+func (mr *MockDBRepoMockRecorder) GetUserActiveStreams(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserActiveStreams", reflect.TypeOf((*MockDBRepo)(nil).GetUserActiveStreams), ctx, userID)
+}
+
+// IsStreamMember mocks base method.
+func (m *MockDBRepo) IsStreamMember(ctx context.Context, streamID, userID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsStreamMember", ctx, streamID, userID)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// IsChatMember indicates an expected call of IsChatMember.
-func (mr *MockDBRepoMockRecorder) IsChatMember(ctx, chatUUID, userUUID interface{}) *gomock.Call {
+// IsStreamMember indicates an expected call of IsStreamMember.
+func (mr *MockDBRepoMockRecorder) IsStreamMember(ctx, streamID, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsChatMember", reflect.TypeOf((*MockDBRepo)(nil).IsChatMember), ctx, chatUUID, userUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsStreamMember", reflect.TypeOf((*MockDBRepo)(nil).IsStreamMember), ctx, streamID, userID)
 }
 
-// IsMessageOwner mocks base method.
-func (m *MockDBRepo) IsMessageOwner(ctx context.Context, chatUUID, messageUUID, userUUID string) (bool, error) {
+// SaveMessage mocks base method.
+func (m *MockDBRepo) SaveMessage(ctx context.Context, message *model.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsMessageOwner", ctx, chatUUID, messageUUID, userUUID)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "SaveMessage", ctx, message)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// IsMessageOwner indicates an expected call of IsMessageOwner.
-func (mr *MockDBRepoMockRecorder) IsMessageOwner(ctx, chatUUID, messageUUID, userUUID interface{}) *gomock.Call {
+// SaveMessage indicates an expected call of SaveMessage.
+func (mr *MockDBRepoMockRecorder) SaveMessage(ctx, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMessageOwner", reflect.TypeOf((*MockDBRepo)(nil).IsMessageOwner), ctx, chatUUID, messageUUID, userUUID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveMessage", reflect.TypeOf((*MockDBRepo)(nil).SaveMessage), ctx, message)
+}
+
+// WithTx mocks base method.
+func (m *MockDBRepo) WithTx(ctx context.Context, cb func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithTx", ctx, cb)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WithTx indicates an expected call of WithTx.
+func (mr *MockDBRepoMockRecorder) WithTx(ctx, cb interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockDBRepo)(nil).WithTx), ctx, cb)
 }
 
 // MockUserClient is a mock of UserClient interface.
@@ -208,10 +233,10 @@ func (m *MockUserClient) EXPECT() *MockUserClientMockRecorder {
 }
 
 // GetUserInfoByUUID mocks base method.
-func (m *MockUserClient) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error) {
+func (m *MockUserClient) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.StreamMemberParams, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserInfoByUUID", ctx, userUUID)
-	ret0, _ := ret[0].(*model.ChatMemberParams)
+	ret0, _ := ret[0].(*model.StreamMemberParams)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -220,4 +245,177 @@ func (m *MockUserClient) GetUserInfoByUUID(ctx context.Context, userUUID string)
 func (mr *MockUserClientMockRecorder) GetUserInfoByUUID(ctx, userUUID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInfoByUUID", reflect.TypeOf((*MockUserClient)(nil).GetUserInfoByUUID), ctx, userUUID)
+}
+
+// MockCetrifugeClient is a mock of CetrifugeClient interface.
+type MockCetrifugeClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockCetrifugeClientMockRecorder
+}
+
+// MockCetrifugeClientMockRecorder is the mock recorder for MockCetrifugeClient.
+type MockCetrifugeClientMockRecorder struct {
+	mock *MockCetrifugeClient
+}
+
+// NewMockCetrifugeClient creates a new mock instance.
+func NewMockCetrifugeClient(ctrl *gomock.Controller) *MockCetrifugeClient {
+	mock := &MockCetrifugeClient{ctrl: ctrl}
+	mock.recorder = &MockCetrifugeClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCetrifugeClient) EXPECT() *MockCetrifugeClientMockRecorder {
+	return m.recorder
+}
+
+// Publish mocks base method.
+func (m *MockCetrifugeClient) Publish(ctx context.Context, channel string, data model.Message) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Publish", ctx, channel, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Publish indicates an expected call of Publish.
+func (mr *MockCetrifugeClientMockRecorder) Publish(ctx, channel, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockCetrifugeClient)(nil).Publish), ctx, channel, data)
+}
+
+// MockValidator is a mock of Validator interface.
+type MockValidator struct {
+	ctrl     *gomock.Controller
+	recorder *MockValidatorMockRecorder
+}
+
+// MockValidatorMockRecorder is the mock recorder for MockValidator.
+type MockValidatorMockRecorder struct {
+	mock *MockValidator
+}
+
+// NewMockValidator creates a new mock instance.
+func NewMockValidator(ctrl *gomock.Controller) *MockValidator {
+	mock := &MockValidator{ctrl: ctrl}
+	mock.recorder = &MockValidatorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockValidator) EXPECT() *MockValidatorMockRecorder {
+	return m.recorder
+}
+
+// ValidateSendMessage mocks base method.
+func (m *MockValidator) ValidateSendMessage(in *chat.SendMessageIn) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateSendMessage", in)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ValidateSendMessage indicates an expected call of ValidateSendMessage.
+func (mr *MockValidatorMockRecorder) ValidateSendMessage(in interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateSendMessage", reflect.TypeOf((*MockValidator)(nil).ValidateSendMessage), in)
+}
+
+// ValidateStreamByType mocks base method.
+func (m *MockValidator) ValidateStreamByType(in *chat.CreateStreamIn, creatorID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateStreamByType", in, creatorID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ValidateStreamByType indicates an expected call of ValidateStreamByType.
+func (mr *MockValidatorMockRecorder) ValidateStreamByType(in, creatorID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateStreamByType", reflect.TypeOf((*MockValidator)(nil).ValidateStreamByType), in, creatorID)
+}
+
+// MockJWTGenerator is a mock of JWTGenerator interface.
+type MockJWTGenerator struct {
+	ctrl     *gomock.Controller
+	recorder *MockJWTGeneratorMockRecorder
+}
+
+// MockJWTGeneratorMockRecorder is the mock recorder for MockJWTGenerator.
+type MockJWTGeneratorMockRecorder struct {
+	mock *MockJWTGenerator
+}
+
+// NewMockJWTGenerator creates a new mock instance.
+func NewMockJWTGenerator(ctrl *gomock.Controller) *MockJWTGenerator {
+	mock := &MockJWTGenerator{ctrl: ctrl}
+	mock.recorder = &MockJWTGeneratorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockJWTGenerator) EXPECT() *MockJWTGeneratorMockRecorder {
+	return m.recorder
+}
+
+// GenerateConnectToken mocks base method.
+func (m *MockJWTGenerator) GenerateConnectToken(userID string) (string, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateConnectToken", userID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GenerateConnectToken indicates an expected call of GenerateConnectToken.
+func (mr *MockJWTGeneratorMockRecorder) GenerateConnectToken(userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateConnectToken", reflect.TypeOf((*MockJWTGenerator)(nil).GenerateConnectToken), userID)
+}
+
+// GenerateSubscribeToken mocks base method.
+func (m *MockJWTGenerator) GenerateSubscribeToken(userID, streamID string) (string, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateSubscribeToken", userID, streamID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GenerateSubscribeToken indicates an expected call of GenerateSubscribeToken.
+func (mr *MockJWTGeneratorMockRecorder) GenerateSubscribeToken(userID, streamID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateSubscribeToken", reflect.TypeOf((*MockJWTGenerator)(nil).GenerateSubscribeToken), userID, streamID)
+}
+
+// ValidateConnectToken mocks base method.
+func (m *MockJWTGenerator) ValidateConnectToken(tokenString string) (*model.CentrifugoConnectClaims, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateConnectToken", tokenString)
+	ret0, _ := ret[0].(*model.CentrifugoConnectClaims)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateConnectToken indicates an expected call of ValidateConnectToken.
+func (mr *MockJWTGeneratorMockRecorder) ValidateConnectToken(tokenString interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateConnectToken", reflect.TypeOf((*MockJWTGenerator)(nil).ValidateConnectToken), tokenString)
+}
+
+// ValidateSubscribeToken mocks base method.
+func (m *MockJWTGenerator) ValidateSubscribeToken(tokenString string) (*model.CentrifugoSubscribeClaims, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateSubscribeToken", tokenString)
+	ret0, _ := ret[0].(*model.CentrifugoSubscribeClaims)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateSubscribeToken indicates an expected call of ValidateSubscribeToken.
+func (mr *MockJWTGeneratorMockRecorder) ValidateSubscribeToken(tokenString interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateSubscribeToken", reflect.TypeOf((*MockJWTGenerator)(nil).ValidateSubscribeToken), tokenString)
 }

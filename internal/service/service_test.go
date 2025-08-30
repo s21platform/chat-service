@@ -15,201 +15,15 @@ import (
 
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
+	"github.com/s21platform/chat-service/internal/pkg/tx"
 	"github.com/s21platform/chat-service/pkg/chat"
 )
 
-func TestServer_CreatePrivateChat(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRepo := NewMockDBRepo(ctrl)
-	mockUserClient := NewMockUserClient(ctrl)
-	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-	initiatorUUID := uuid.New().String()
-	companionUUID := uuid.New().String()
-
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
-	ctx = context.WithValue(ctx, config.KeyUUID, initiatorUUID)
-
-	s := New(mockRepo, mockUserClient)
-
-	t.Run("success", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_initiator",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_companion",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockRepo.EXPECT().CreatePrivateChat(ctx).
-			Return("chat_uuid", nil)
-		mockRepo.EXPECT().AddPrivateChatMember(ctx, gomock.Any(), gomock.Any()).
-			Return(nil)
-		mockRepo.EXPECT().AddPrivateChatMember(ctx, gomock.Any(), gomock.Any()).
-			Return(nil)
-
-		chatUUID, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.NoError(t, err)
-		assert.NotNil(t, chatUUID)
-		assert.Equal(t, "chat_uuid", chatUUID.NewChatUuid)
-	})
-
-	t.Run("no_initiatorUUID", func(t *testing.T) {
-		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
-
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-		mockLogger.EXPECT().Error("failed to get initiatorID")
-
-		_, err := s.CreatePrivateChat(badCtx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get initiatorID")
-	})
-
-	t.Run("get_initiatorSetup_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(nil, fmt.Errorf("failed to get initiator info"))
-
-		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get initiator info")
-	})
-
-	t.Run("get_companionSetup_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_initiator",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(nil, fmt.Errorf("failed to get companion info"))
-
-		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get companion info")
-	})
-
-	t.Run("DB_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_initiator",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_companion",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockRepo.EXPECT().CreatePrivateChat(ctx).
-			Return("", fmt.Errorf("failed to create chat"))
-
-		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to create chat")
-	})
-
-	t.Run("add_initiator_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_initiator",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_companion",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockRepo.EXPECT().CreatePrivateChat(ctx).
-			Return("chat_uuid", nil)
-
-		mockRepo.EXPECT().AddPrivateChatMember(ctx, "chat_uuid", gomock.Any()).
-			Return(fmt.Errorf("failed to add initiator"))
-
-		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to add initiator")
-	})
-
-	t.Run("add_companion_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("CreatePrivateChat")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, initiatorUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_initiator",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
-			Return(&model.ChatMemberParams{
-				Nickname:   "test_companion",
-				AvatarLink: "test_avatar_link",
-			}, nil)
-
-		mockRepo.EXPECT().CreatePrivateChat(ctx).
-			Return("chat_uuid", nil)
-
-		mockRepo.EXPECT().AddPrivateChatMember(ctx, "chat_uuid", gomock.Any()).
-			Return(nil)
-
-		mockRepo.EXPECT().AddPrivateChatMember(ctx, "chat_uuid", gomock.Any()).
-			Return(fmt.Errorf("failed to add companion"))
-
-		_, err := s.CreatePrivateChat(ctx, &chat.CreatePrivateChatIn{
-			CompanionUuid: companionUUID,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to add companion")
-	})
+func createTxContext(ctx context.Context, mockRepo *MockDBRepo) context.Context {
+	return context.WithValue(ctx, tx.KeyTx, tx.Tx{DbRepo: mockRepo})
 }
 
-func TestServer_GetPrivateRecentMessages(t *testing.T) {
+func TestServer_GetStreamRecentMessages(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -217,43 +31,55 @@ func TestServer_GetPrivateRecentMessages(t *testing.T) {
 
 	mockRepo := NewMockDBRepo(ctrl)
 	mockUserClient := NewMockUserClient(ctrl)
+	mockValidator := NewMockValidator(ctrl)
 	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
 
 	userUUID := uuid.New().String()
-	chatUUID := uuid.New().String()
+	streamID := uuid.New().String()
+	offset := time.Now().Add(-1 * time.Hour).Format(time.RFC3339)
+	limit := int32(50)
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
 	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
 
-	s := New(mockRepo, mockUserClient)
+	s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
 
 	t.Run("success", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("GetRecentMessages")
+		mockLogger.EXPECT().AddFuncName("GetStreamRecentMessages")
 
 		expectedMessages := &model.MessageList{
 			{
-				Uuid:       uuid.New(),
-				Content:    "message 1",
-				SentAt:     time.Now().Add(-10 * time.Minute),
-				UpdatedAt:  time.Now().Add(-5 * time.Minute),
-				RootUUID:   uuid.Nil,
-				ParentUUID: uuid.Nil,
+				ID:        uuid.New(),
+				StreamID:  uuid.MustParse(streamID),
+				SenderID:  uuid.New(),
+				Type:      "text",
+				Content:   "message 1",
+				RootID:    nil,
+				ParentID:  nil,
+				SentAt:    time.Now().Add(-10 * time.Minute),
+				UpdatedAt: nil,
 			},
 			{
-				Uuid:       uuid.New(),
-				Content:    "message 2",
-				SentAt:     time.Now().Add(-10 * time.Minute),
-				UpdatedAt:  time.Now().Add(-5 * time.Minute),
-				RootUUID:   uuid.Nil,
-				ParentUUID: uuid.Nil,
+				ID:        uuid.New(),
+				StreamID:  uuid.MustParse(streamID),
+				SenderID:  uuid.New(),
+				Type:      "text",
+				Content:   "message 2",
+				RootID:    nil,
+				ParentID:  nil,
+				SentAt:    time.Now().Add(-5 * time.Minute),
+				UpdatedAt: nil,
 			},
 		}
 
-		mockRepo.EXPECT().GetPrivateRecentMessages(ctx, chatUUID, userUUID).Return(expectedMessages, nil)
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetStreamRecentMessages(ctx, streamID, offset, limit).Return(expectedMessages, nil)
 
-		messages, err := s.GetPrivateRecentMessages(ctx, &chat.GetPrivateRecentMessagesIn{
-			ChatUuid: chatUUID,
+		messages, err := s.GetStreamRecentMessages(ctx, &chat.GetStreamRecentMessagesIn{
+			StreamId: streamID,
+			Offset:   offset,
+			Limit:    limit,
 		})
 
 		assert.NoError(t, err)
@@ -264,529 +90,552 @@ func TestServer_GetPrivateRecentMessages(t *testing.T) {
 	t.Run("no_userUUID", func(t *testing.T) {
 		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
 
-		mockLogger.EXPECT().AddFuncName("GetRecentMessages")
+		mockLogger.EXPECT().AddFuncName("GetStreamRecentMessages")
 		mockLogger.EXPECT().Error("failed to find uuid")
 
-		_, err := s.GetPrivateRecentMessages(badCtx, &chat.GetPrivateRecentMessagesIn{
-			ChatUuid: chatUUID,
+		_, err := s.GetStreamRecentMessages(badCtx, &chat.GetStreamRecentMessagesIn{
+			StreamId: streamID,
+			Offset:   offset,
+			Limit:    limit,
 		})
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to find uuid")
+	})
+
+	t.Run("not_stream_member", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetStreamRecentMessages")
+
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, userUUID).Return(false, nil)
+		mockLogger.EXPECT().Error("user is not a member of the stream")
+
+		_, err := s.GetStreamRecentMessages(ctx, &chat.GetStreamRecentMessagesIn{
+			StreamId: streamID,
+			Offset:   offset,
+			Limit:    limit,
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "user is not a member of the stream")
 	})
 
 	t.Run("DB_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("GetRecentMessages")
+		mockLogger.EXPECT().AddFuncName("GetStreamRecentMessages")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().GetPrivateRecentMessages(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to fetch chat"))
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetStreamRecentMessages(ctx, streamID, offset, limit).Return(nil, fmt.Errorf("failed to fetch messages"))
 
-		_, err := s.GetPrivateRecentMessages(ctx, &chat.GetPrivateRecentMessagesIn{
-			ChatUuid: chatUUID,
+		_, err := s.GetStreamRecentMessages(ctx, &chat.GetStreamRecentMessagesIn{
+			StreamId: streamID,
+			Offset:   offset,
+			Limit:    limit,
 		})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to fetch chat")
+		assert.Contains(t, err.Error(), "failed to fetch messages")
 	})
-}
 
-func TestServer_EditPrivateMessage(t *testing.T) {
-	t.Parallel()
+	t.Run("membership_check_error", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetStreamRecentMessages")
+		mockLogger.EXPECT().Error(gomock.Any())
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, userUUID).
+			Return(false, fmt.Errorf("db connection failed"))
 
-	mockRepo := NewMockDBRepo(ctrl)
-	mockUserClient := NewMockUserClient(ctrl)
-	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+		_, err := s.GetStreamRecentMessages(ctx, &chat.GetStreamRecentMessagesIn{
+			StreamId: streamID,
+			Offset:   offset,
+			Limit:    limit,
+		})
 
-	userUUID := uuid.New().String()
-	chatUUID := uuid.New().String()
-	messageUUID := uuid.New()
-	newContent := "this is the new content"
-	updateAt := time.Now()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to check stream membership")
+	})
 
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
-	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
+	t.Run("success_empty_offset", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetStreamRecentMessages")
 
-	s := New(mockRepo, mockUserClient)
+		emptyMessages := &model.MessageList{}
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, userUUID).Return(true, nil)
+		mockRepo.EXPECT().GetStreamRecentMessages(ctx, streamID, "", int32(10)).Return(emptyMessages, nil)
 
-	t.Run("success", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
-			Return(true, nil)
-
-		deletionInfo := &model.DeletionInfo{}
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).Return(deletionInfo, nil)
-
-		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
-			Return(true, nil)
-
-		updatedMessage := &model.EditedMessage{
-			MessageUUID: messageUUID,
-			Content:     newContent,
-			UpdateAt:    updateAt,
-		}
-		mockRepo.EXPECT().EditPrivateMessage(ctx, messageUUID.String(), newContent).Return(updatedMessage, nil)
-
-		response, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
+		messages, err := s.GetStreamRecentMessages(ctx, &chat.GetStreamRecentMessagesIn{
+			StreamId: streamID,
+			Offset:   "",
+			Limit:    10,
 		})
 
 		assert.NoError(t, err)
-		assert.Equal(t, newContent, response.NewContent)
-		assert.Equal(t, updateAt.Format(time.RFC3339), response.UpdatedAt)
+		assert.NotNil(t, messages)
+		assert.Len(t, messages.Messages, 0)
 	})
+}
 
-	t.Run("no_userUUID", func(t *testing.T) {
-		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
+func TestServer_CreateStream(t *testing.T) {
+	t.Parallel()
 
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error("failed to find uuid")
+	creatorUUID := uuid.New().String()
+	companionUUID := uuid.New().String()
 
-		_, err := s.EditPrivateMessage(badCtx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, creatorUUID)
+
+		ctx = createTxContext(ctx, mockRepo)
+
+		s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("CreateStream")
+
+		mockValidator.EXPECT().ValidateStreamByType(gomock.Any(), creatorUUID).Return(nil)
+
+		mockRepo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+			return fn(ctx)
 		})
 
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to find uuid")
-	})
-
-	t.Run("IsChatMember_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
-			Return(false, fmt.Errorf("failed to check user in chat"))
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to check user in chat")
-	})
-
-	t.Run("isMember_false", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
-			Return(false, nil)
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to user is not chat member")
-	})
-
-	t.Run("GetPrivateDeletionInfo_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
-			Return(true, nil)
-
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
-			Return(nil, fmt.Errorf("failed to check deletion status"))
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to check deletion status")
-	})
-
-	t.Run("Error_checking_deletion_status", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().IsChatMember(ctx, gomock.Any(), gomock.Any()).
-			Return(true, nil)
-
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
-			Return(&model.DeletionInfo{
-				DeletedAt: "time",
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, creatorUUID).
+			Return(&model.StreamMemberParams{
+				UserID:    creatorUUID,
+				Nickname:  "test_creator",
+				AvatarURL: "test_avatar",
 			}, nil)
 
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.StreamMemberParams{
+				UserID:    companionUUID,
+				Nickname:  "test_companion",
+				AvatarURL: "test_avatar",
+			}, nil)
+
+		mockRepo.EXPECT().AddNewUser(ctx, gomock.Any()).Return(nil).Times(2)
+		mockRepo.EXPECT().CreateStream(ctx, "private", gomock.Any(), creatorUUID).Return("test-stream-id", nil)
+		mockRepo.EXPECT().AddStreamMembers(ctx, gomock.Any(), gomock.Any()).Return(nil)
+		mockRepo.EXPECT().AddUserSubscriptions(ctx, gomock.Any()).Return(nil)
+
+		result, err := s.CreateStream(ctx, &chat.CreateStreamIn{
+			Users: []*chat.ChatUser{
+				{Id: companionUUID, Metadata: "metadata1"},
+			},
+			Type:            "private",
+			ChatMetadata:    "chat metadata",
+			CreatorMetadata: "creator metadata",
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "test-stream-id", result.Id)
+	})
+
+	t.Run("no_creatorID", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("CreateStream")
+		mockLogger.EXPECT().Error("failed to get creator ID")
+
+		_, err := s.CreateStream(ctx, &chat.CreateStreamIn{
+			Users: []*chat.ChatUser{
+				{Id: companionUUID},
+			},
+			Type: "private",
 		})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to edit deleted message")
+		assert.Contains(t, err.Error(), "failed to get creator ID")
+	})
+
+	t.Run("validation_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, creatorUUID)
+
+		s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("CreateStream")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockValidator.EXPECT().ValidateStreamByType(gomock.Any(), creatorUUID).
+			Return(fmt.Errorf("validation failed"))
+
+		_, err := s.CreateStream(ctx, &chat.CreateStreamIn{
+			Users: []*chat.ChatUser{
+				{Id: companionUUID},
+			},
+			Type: "private",
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "stream validation failed")
+	})
+
+	t.Run("transaction_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, creatorUUID)
+
+		ctx = createTxContext(ctx, mockRepo)
+
+		s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("CreateStream")
+		mockLogger.EXPECT().Error(gomock.Any())
+
+		mockValidator.EXPECT().ValidateStreamByType(gomock.Any(), creatorUUID).Return(nil)
+
+		mockRepo.EXPECT().WithTx(ctx, gomock.Any()).Return(fmt.Errorf("transaction failed"))
+
+		_, err := s.CreateStream(ctx, &chat.CreateStreamIn{
+			Users: []*chat.ChatUser{
+				{Id: companionUUID},
+			},
+			Type: "private",
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create stream")
+	})
+
+	t.Run("user_info_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, creatorUUID)
+
+		ctx = createTxContext(ctx, mockRepo)
+
+		s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("CreateStream")
+		mockLogger.EXPECT().Error(gomock.Any()).Times(2)
+
+		mockValidator.EXPECT().ValidateStreamByType(gomock.Any(), creatorUUID).Return(nil)
+
+		mockRepo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+			return fn(ctx)
+		})
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, creatorUUID).
+			Return(&model.StreamMemberParams{
+				UserID:    creatorUUID,
+				Nickname:  "test_creator",
+				AvatarURL: "test_avatar",
+			}, nil)
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(nil, fmt.Errorf("user not found"))
+
+		mockRepo.EXPECT().AddNewUser(ctx, gomock.Any()).Return(nil)
+
+		_, err := s.CreateStream(ctx, &chat.CreateStreamIn{
+			Users: []*chat.ChatUser{
+				{Id: companionUUID},
+			},
+			Type: "private",
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create stream")
+	})
+
+	t.Run("create_stream_error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, creatorUUID)
+
+		ctx = createTxContext(ctx, mockRepo)
+
+		s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("CreateStream")
+		mockLogger.EXPECT().Error(gomock.Any()).Times(2)
+
+		mockValidator.EXPECT().ValidateStreamByType(gomock.Any(), creatorUUID).Return(nil)
+
+		mockRepo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+			return fn(ctx)
+		})
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, creatorUUID).
+			Return(&model.StreamMemberParams{
+				UserID:    creatorUUID,
+				Nickname:  "test_creator",
+				AvatarURL: "test_avatar",
+			}, nil)
+
+		mockUserClient.EXPECT().GetUserInfoByUUID(ctx, companionUUID).
+			Return(&model.StreamMemberParams{
+				UserID:    companionUUID,
+				Nickname:  "test_companion",
+				AvatarURL: "test_avatar",
+			}, nil)
+
+		mockRepo.EXPECT().AddNewUser(ctx, gomock.Any()).Return(nil).Times(2)
+		mockRepo.EXPECT().CreateStream(ctx, "private", gomock.Any(), creatorUUID).
+			Return("", fmt.Errorf("failed to create stream"))
+
+		_, err := s.CreateStream(ctx, &chat.CreateStreamIn{
+			Users: []*chat.ChatUser{
+				{Id: companionUUID},
+			},
+			Type: "private",
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create stream")
+	})
+}
+
+func TestServer_SendMessage(t *testing.T) {
+	t.Parallel()
+
+	senderUUID := uuid.New().String()
+	streamID := uuid.New().String()
+	parentID := uuid.New().String()
+	rootID := uuid.New().String()
+
+	t.Run("success_simple", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockCentrifuge := NewMockCetrifugeClient(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, senderUUID)
+
+		ctx = createTxContext(ctx, mockRepo)
+
+		s := New(mockRepo, mockUserClient, mockCentrifuge, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("SendMessage")
+
+		mockValidator.EXPECT().ValidateSendMessage(gomock.Any()).Return(nil)
+		mockRepo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+			return fn(ctx)
+		})
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, senderUUID).Return(true, nil)
+		mockRepo.EXPECT().SaveMessage(ctx, gomock.Any()).Return(nil)
+		mockCentrifuge.EXPECT().Publish(ctx, streamID, gomock.Any()).Return(nil)
+
+		result, err := s.SendMessage(ctx, &chat.SendMessageIn{
+			StreamId:    streamID,
+			Content:     "Hello world",
+			MessageType: "text",
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.NotEmpty(t, result.MessageId)
+	})
+
+	t.Run("success_with_parent_and_root", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockCentrifuge := NewMockCetrifugeClient(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+		ctx = context.WithValue(ctx, config.KeyUUID, senderUUID)
+
+		ctx = createTxContext(ctx, mockRepo)
+
+		s := New(mockRepo, mockUserClient, mockCentrifuge, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("SendMessage")
+
+		mockValidator.EXPECT().ValidateSendMessage(gomock.Any()).Return(nil)
+		mockRepo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+			return fn(ctx)
+		})
+		mockRepo.EXPECT().IsStreamMember(ctx, streamID, senderUUID).Return(true, nil)
+		mockRepo.EXPECT().SaveMessage(ctx, gomock.Any()).Return(nil)
+		mockCentrifuge.EXPECT().Publish(ctx, streamID, gomock.Any()).Return(nil)
+
+		result, err := s.SendMessage(ctx, &chat.SendMessageIn{
+			StreamId:    streamID,
+			Content:     "Reply message",
+			ParentId:    &parentID,
+			RootId:      &rootID,
+			MessageType: "text",
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.NotEmpty(t, result.MessageId)
+	})
+
+	t.Run("no_senderID", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRepo := NewMockDBRepo(ctrl)
+		mockUserClient := NewMockUserClient(ctrl)
+		mockValidator := NewMockValidator(ctrl)
+		mockCentrifuge := NewMockCetrifugeClient(ctrl)
+		mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+
+		s := New(mockRepo, mockUserClient, mockCentrifuge, mockValidator, nil)
+
+		mockLogger.EXPECT().AddFuncName("SendMessage")
+		mockLogger.EXPECT().Error("failed to get sender ID")
+
+		_, err := s.SendMessage(ctx, &chat.SendMessageIn{
+			StreamId:    streamID,
+			Content:     "Hello",
+			MessageType: "text",
+		})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get sender ID")
+	})
+}
+
+func TestServer_GetPrivateStreams(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := NewMockDBRepo(ctrl)
+	mockUserClient := NewMockUserClient(ctrl)
+	mockValidator := NewMockValidator(ctrl)
+	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
+
+	userUUID := uuid.New().String()
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
+	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
+
+	s := New(mockRepo, mockUserClient, nil, mockValidator, nil)
+
+	t.Run("success", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetPrivateStreams")
+
+		expectedStreams := &model.PrivateStreamPreviewList{
+			{
+				StreamID:             uuid.New().String(),
+				StreamName:           "John Doe",
+				AvatarURL:            "avatar.jpg",
+				LastMessageContent:   "Hello there!",
+				LastMessageTimestamp: func() *time.Time { t := time.Now().Add(-10 * time.Minute); return &t }(),
+			},
+			{
+				StreamID:             uuid.New().String(),
+				StreamName:           "Jane Smith",
+				AvatarURL:            "avatar2.jpg",
+				LastMessageContent:   "How are you?",
+				LastMessageTimestamp: func() *time.Time { t := time.Now().Add(-5 * time.Minute); return &t }(),
+			},
+		}
+
+		mockRepo.EXPECT().GetPrivateStreams(ctx, userUUID).Return(expectedStreams, nil)
+
+		result, err := s.GetPrivateStreams(ctx, &emptypb.Empty{})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result.Streams, 2)
+	})
+
+	t.Run("no_userUUID", func(t *testing.T) {
+		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
+
+		mockLogger.EXPECT().AddFuncName("GetPrivateStreams")
+		mockLogger.EXPECT().Error("failed to get requester id")
+
+		_, err := s.GetPrivateStreams(badCtx, &emptypb.Empty{})
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get requester id")
+	})
+
+	t.Run("empty_streams", func(t *testing.T) {
+		mockLogger.EXPECT().AddFuncName("GetPrivateStreams")
+
+		emptyStreams := &model.PrivateStreamPreviewList{}
+		mockRepo.EXPECT().GetPrivateStreams(ctx, userUUID).Return(emptyStreams, nil)
+
+		result, err := s.GetPrivateStreams(ctx, &emptypb.Empty{})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result.Streams, 0)
 	})
 
 	t.Run("DB_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
+		mockLogger.EXPECT().AddFuncName("GetPrivateStreams")
 		mockLogger.EXPECT().Error(gomock.Any())
 
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
-			Return(true, nil)
+		mockRepo.EXPECT().GetPrivateStreams(ctx, userUUID).
+			Return(nil, fmt.Errorf("database connection failed"))
 
-		deletionInfo := &model.DeletionInfo{}
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).Return(deletionInfo, nil)
-
-		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
-			Return(true, nil)
-
-		mockRepo.EXPECT().EditPrivateMessage(ctx, messageUUID.String(), newContent).Return(nil, fmt.Errorf("failed to edit private message"))
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
+		_, err := s.GetPrivateStreams(ctx, &emptypb.Empty{})
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to edit private message")
-	})
-
-	t.Run("NotMessageOwner", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error("failed to user is not message owner")
-
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
-			Return(true, nil)
-
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
-			Return(&model.DeletionInfo{}, nil)
-
-		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
-			Return(false, nil)
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to user is not message owner")
-	})
-
-	t.Run("IsMessageOwner_error", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("EditPrivateMessage")
-		mockLogger.EXPECT().Error(gomock.Any())
-
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).
-			Return(true, nil)
-
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID.String()).
-			Return(&model.DeletionInfo{}, nil)
-
-		mockRepo.EXPECT().IsMessageOwner(ctx, chatUUID, messageUUID.String(), userUUID).
-			Return(false, fmt.Errorf("some DB error"))
-
-		_, err := s.EditPrivateMessage(ctx, &chat.EditPrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID.String(),
-			NewContent:  newContent,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to check message owner")
-	})
-}
-
-func TestServer_GetChats(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRepo := NewMockDBRepo(ctrl)
-	mockUserClient := NewMockUserClient(ctrl)
-	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-	userUUID := uuid.New().String()
-	expectedLastMessageTime := time.Now()
-
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
-	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
-
-	s := New(mockRepo, mockUserClient)
-
-	t.Run("success", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("GetChats")
-
-		expPrivateChats := &model.ChatInfoList{
-			{
-				LastMessage:          "How are you?",
-				ChatName:             "Private chat name",
-				AvatarURL:            "standart avatar url",
-				LastMessageTimestamp: &expectedLastMessageTime,
-				ChatUUID:             uuid.New().String(),
-			},
-		}
-
-		expGroupChats := &model.ChatInfoList{
-			{
-				LastMessage:          "Hello!",
-				ChatName:             "Group chat name",
-				AvatarURL:            "standart avatar url",
-				LastMessageTimestamp: &expectedLastMessageTime,
-				ChatUUID:             uuid.New().String(),
-			},
-		}
-
-		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(expPrivateChats, nil)
-		mockRepo.EXPECT().GetGroupChats(ctx, userUUID).Return(expGroupChats, nil)
-
-		chats, err := s.GetChats(ctx, &emptypb.Empty{})
-
-		assert.NoError(t, err)
-		assert.NotNil(t, chats)
-		assert.Len(t, chats.Chats, 2)
-	})
-
-	t.Run("no_userUUID", func(t *testing.T) {
-		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
-
-		mockLogger.EXPECT().AddFuncName("GetChats")
-		mockLogger.EXPECT().Error("failed to find userUUID")
-
-		_, err := s.GetChats(badCtx, &emptypb.Empty{})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to find userUUID")
-	})
-
-	t.Run("DB_private_error", func(t *testing.T) {
-		expectedErr := fmt.Errorf("failed to get private chats")
-
-		mockLogger.EXPECT().AddFuncName("GetChats")
-		mockLogger.EXPECT().Error(gomock.Any())
-		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(nil, expectedErr)
-
-		_, err := s.GetChats(ctx, &emptypb.Empty{})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), expectedErr.Error())
-	})
-
-	t.Run("DB_group_error", func(t *testing.T) {
-		expectedErr := fmt.Errorf("failed to get group chats")
-
-		mockLogger.EXPECT().AddFuncName("GetChats")
-		mockLogger.EXPECT().Error(gomock.Any())
-		mockRepo.EXPECT().GetPrivateChats(ctx, userUUID).Return(&model.ChatInfoList{}, nil)
-		mockRepo.EXPECT().GetGroupChats(ctx, userUUID).Return(nil, expectedErr)
-
-		_, err := s.GetChats(ctx, &emptypb.Empty{})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), expectedErr.Error())
-	})
-}
-
-func TestServer_DeletePrivateMessage(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRepo := NewMockDBRepo(ctrl)
-	mockUserClient := NewMockUserClient(ctrl)
-	mockLogger := logger_lib.NewMockLoggerInterface(ctrl)
-
-	userUUID := uuid.New().String()
-	chatUUID := uuid.New().String()
-	messageUUID := uuid.New().String()
-
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, config.KeyLogger, mockLogger)
-	ctx = context.WithValue(ctx, config.KeyUUID, userUUID)
-
-	s := New(mockRepo, mockUserClient)
-
-	t.Run("success_self_to_all", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{
-			DeletedBy:    uuid.New().String(),
-			DeleteFormat: model.Self,
-			DeletedAt:    time.Now().Format(time.RFC3339),
-		}, nil)
-		mockRepo.EXPECT().DeletePrivateMessage(ctx, userUUID, messageUUID, model.All).Return(true, nil)
-
-		isDeleted, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.NoError(t, err)
-		assert.Equal(t, true, isDeleted.DeletionStatus)
-	})
-
-	t.Run("success_direct_all", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{}, nil)
-		mockRepo.EXPECT().DeletePrivateMessage(ctx, userUUID, messageUUID, model.All).Return(true, nil)
-
-		isDeleted, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.NoError(t, err)
-		assert.Equal(t, true, isDeleted.DeletionStatus)
-	})
-
-	t.Run("no_userUUID", func(t *testing.T) {
-		badCtx := context.WithValue(context.Background(), config.KeyLogger, mockLogger)
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockLogger.EXPECT().Error("failed to find uuid")
-
-		_, err := s.DeletePrivateMessage(badCtx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to find uuid")
-	})
-
-	t.Run("not_chat_member", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(false, nil)
-		mockLogger.EXPECT().Error("failed to user is not chat member")
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to user is not chat member")
-	})
-
-	t.Run("is_chat_member_error", func(t *testing.T) {
-		expectedErr := fmt.Errorf("db error")
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(false, expectedErr)
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to check if user is chat member: %v", expectedErr))
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to check user is chat member")
-	})
-
-	t.Run("invalid_mode", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to invalid mode: %s", "invalid"))
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        "invalid",
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to invalid mode")
-	})
-
-	t.Run("already_deleted_all", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{
-			DeletedBy:    uuid.New().String(),
-			DeleteFormat: model.All,
-			DeletedAt:    time.Now().Format(time.RFC3339),
-		}, nil)
-		mockLogger.EXPECT().Error("failed to message is already deleted")
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to message is already deleted")
-	})
-
-	t.Run("already_deleted_self_by_user", func(t *testing.T) {
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{
-			DeletedBy:    userUUID,
-			DeleteFormat: model.Self,
-			DeletedAt:    time.Now().Format(time.RFC3339),
-		}, nil)
-		mockLogger.EXPECT().Error("failed to message is already deleted")
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.Self,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to message is already deleted")
-	})
-
-	t.Run("get_deletion_info_error", func(t *testing.T) {
-		expectedErr := fmt.Errorf("db error")
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(nil, expectedErr)
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to get private message deletion info: %v", expectedErr))
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get private message deletion info")
-	})
-
-	t.Run("delete_message_error", func(t *testing.T) {
-		expectedErr := fmt.Errorf("db error")
-		mockLogger.EXPECT().AddFuncName("DeletePrivateMessage")
-		mockRepo.EXPECT().IsChatMember(ctx, chatUUID, userUUID).Return(true, nil)
-		mockRepo.EXPECT().GetPrivateDeletionInfo(ctx, messageUUID).Return(&model.DeletionInfo{}, nil)
-		mockRepo.EXPECT().DeletePrivateMessage(ctx, userUUID, messageUUID, model.All).Return(false, expectedErr)
-		mockLogger.EXPECT().Error(fmt.Sprintf("failed to delete private message: %v", expectedErr))
-
-		_, err := s.DeletePrivateMessage(ctx, &chat.DeletePrivateMessageIn{
-			ChatUuid:    chatUUID,
-			MessageUuid: messageUUID,
-			Mode:        model.All,
-		})
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to delete private message")
+		assert.Contains(t, err.Error(), "failed to get private streams")
 	})
 }

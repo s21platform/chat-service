@@ -1,0 +1,30 @@
+version: 2
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - ineffassign
+    - errcheck
+    - makezero
+    - whitespace
+
+run:
+  timeout: 5m
+  tests: true
+
+issues:
+  exclude-dirs:
+    - "/migrations"
+  exclude-rules:
+    - linters:
+        - errcheck
+      text: "error is not checked"
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  name: colored-line-number
+  enable:
+    - gofmt
+    - goimports

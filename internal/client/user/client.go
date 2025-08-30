@@ -1,4 +1,4 @@
-package client
+package user
 
 import (
 	"context"
@@ -15,11 +15,11 @@ import (
 	"github.com/s21platform/chat-service/internal/model"
 )
 
-type Service struct {
+type Client struct {
 	client userproto.UserServiceClient
 }
 
-func NewService(cfg *config.Config) *Service {
+func New(cfg *config.Config) *Client {
 	connStr := fmt.Sprintf("%s:%s", cfg.UserService.Host, cfg.UserService.Port)
 
 	conn, err := grpc.NewClient(connStr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -29,10 +29,10 @@ func NewService(cfg *config.Config) *Service {
 
 	client := userproto.NewUserServiceClient(conn)
 
-	return &Service{client: client}
+	return &Client{client: client}
 }
 
-func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.ChatMemberParams, error) {
+func (s *Client) GetUserInfoByUUID(ctx context.Context, userUUID string) (*model.StreamMemberParams, error) {
 	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("uuid", userUUID))
 
 	resp, err := s.client.GetUserInfoByUUID(ctx, &userproto.GetUserInfoByUUIDIn{Uuid: userUUID})
@@ -40,9 +40,9 @@ func (s *Service) GetUserInfoByUUID(ctx context.Context, userUUID string) (*mode
 		return nil, fmt.Errorf("failed to get user info from user-service: %v", err)
 	}
 
-	return &model.ChatMemberParams{
-		UserUUID:   userUUID,
-		Nickname:   resp.Nickname,
-		AvatarLink: resp.Avatar,
+	return &model.StreamMemberParams{
+		UserID:    userUUID,
+		Nickname:  resp.Nickname,
+		AvatarURL: resp.Avatar,
 	}, nil
 }

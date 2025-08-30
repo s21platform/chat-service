@@ -4,17 +4,23 @@
 ## Table of Contents
 
 - [api/chat.proto](#api_chat-proto)
-    - [Chat](#-Chat)
-    - [CreatePrivateChatIn](#-CreatePrivateChatIn)
-    - [CreatePrivateChatOut](#-CreatePrivateChatOut)
-    - [DeletePrivateMessageIn](#-DeletePrivateMessageIn)
-    - [DeletePrivateMessageOut](#-DeletePrivateMessageOut)
-    - [EditPrivateMessageIn](#-EditPrivateMessageIn)
-    - [EditPrivateMessageOut](#-EditPrivateMessageOut)
-    - [GetChatsOut](#-GetChatsOut)
-    - [GetPrivateRecentMessagesIn](#-GetPrivateRecentMessagesIn)
-    - [GetPrivateRecentMessagesOut](#-GetPrivateRecentMessagesOut)
+    - [ChatUser](#-ChatUser)
+    - [CreateStreamIn](#-CreateStreamIn)
+    - [CreateStreamOut](#-CreateStreamOut)
+    - [GetBatchSubscribeTokensIn](#-GetBatchSubscribeTokensIn)
+    - [GetBatchSubscribeTokensOut](#-GetBatchSubscribeTokensOut)
+    - [GetConnectAccessTokenOut](#-GetConnectAccessTokenOut)
+    - [GetPrivateStreamsOut](#-GetPrivateStreamsOut)
+    - [GetStreamRecentMessagesIn](#-GetStreamRecentMessagesIn)
+    - [GetStreamRecentMessagesOut](#-GetStreamRecentMessagesOut)
+    - [GetStreamSubscribeTokenIn](#-GetStreamSubscribeTokenIn)
+    - [GetStreamSubscribeTokenOut](#-GetStreamSubscribeTokenOut)
+    - [GetUserActiveStreamsOut](#-GetUserActiveStreamsOut)
     - [Message](#-Message)
+    - [PrivateStream](#-PrivateStream)
+    - [SendMessageIn](#-SendMessageIn)
+    - [SendMessageOut](#-SendMessageOut)
+    - [StreamSubscription](#-StreamSubscription)
   
     - [ChatService](#-ChatService)
   
@@ -29,160 +35,189 @@
 
 
 
-<a name="-Chat"></a>
+<a name="-ChatUser"></a>
 
-### Chat
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| last_message | [string](#string) |  | Контент последнего сообщения |
-| chat_name | [string](#string) |  | Название чата |
-| avatar_url | [string](#string) |  | Аватарка чата |
-| last_message_timestamp | [string](#string) |  | Время отправки последнего сообщения |
-| chat_uuid | [string](#string) |  | UUID чата |
-
-
-
-
-
-
-<a name="-CreatePrivateChatIn"></a>
-
-### CreatePrivateChatIn
+### ChatUser
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| companion_uuid | [string](#string) |  | uuid второго пользователя, с которым будет идти переписка |
+| id | [string](#string) |  | id пользователя |
+| metadata | [string](#string) |  | метаданные пользователя |
 
 
 
 
 
 
-<a name="-CreatePrivateChatOut"></a>
+<a name="-CreateStreamIn"></a>
 
-### CreatePrivateChatOut
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| new_chat_uuid | [string](#string) |  | uuid созданного чата |
-
-
-
-
-
-
-<a name="-DeletePrivateMessageIn"></a>
-
-### DeletePrivateMessageIn
+### CreateStreamIn
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| chat_uuid | [string](#string) |  | uuid чата |
-| message_uuid | [string](#string) |  | uuid сообщения |
-| mode | [string](#string) |  | тип удаления: у всех или у себя |
+| users | [ChatUser](#ChatUser) | repeated | пользователи стрима |
+| type | [string](#string) |  | тип стрима |
+| chat_metadata | [string](#string) |  | метаданные чата |
+| creator_metadata | [string](#string) |  | метаданные создателя |
 
 
 
 
 
 
-<a name="-DeletePrivateMessageOut"></a>
+<a name="-CreateStreamOut"></a>
 
-### DeletePrivateMessageOut
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| deletion_status | [bool](#bool) |  | статус удаления |
-
-
-
-
-
-
-<a name="-EditPrivateMessageIn"></a>
-
-### EditPrivateMessageIn
+### CreateStreamOut
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| chat_uuid | [string](#string) |  | uuid чата |
-| message_uuid | [string](#string) |  | uuid сообщения |
-| new_content | [string](#string) |  | новый текст сообщения |
+| id | [string](#string) |  | id созданного стрима |
 
 
 
 
 
 
-<a name="-EditPrivateMessageOut"></a>
+<a name="-GetBatchSubscribeTokensIn"></a>
 
-### EditPrivateMessageOut
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| message_uuid | [string](#string) |  | uuid измененного сообщения |
-| new_content | [string](#string) |  | новый текст сообщения |
-| updated_at | [string](#string) |  | время обновления сообщения |
-
-
-
-
-
-
-<a name="-GetChatsOut"></a>
-
-### GetChatsOut
+### GetBatchSubscribeTokensIn
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| chats | [Chat](#Chat) | repeated | Список чатов |
+| stream_ids | [string](#string) | repeated | Список ID стримов для которых нужны токены |
 
 
 
 
 
 
-<a name="-GetPrivateRecentMessagesIn"></a>
+<a name="-GetBatchSubscribeTokensOut"></a>
 
-### GetPrivateRecentMessagesIn
+### GetBatchSubscribeTokensOut
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| chat_uuid | [string](#string) |  | uuid чата, из которого достаем сообщения |
+| subscriptions | [StreamSubscription](#StreamSubscription) | repeated | Токены для подписки на стримы |
 
 
 
 
 
 
-<a name="-GetPrivateRecentMessagesOut"></a>
+<a name="-GetConnectAccessTokenOut"></a>
 
-### GetPrivateRecentMessagesOut
+### GetConnectAccessTokenOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| token | [string](#string) |  | JWT токен для подключения к Centrifugo |
+| expires_at | [int64](#int64) |  | время истечения токена (unix timestamp) |
+
+
+
+
+
+
+<a name="-GetPrivateStreamsOut"></a>
+
+### GetPrivateStreamsOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| streams | [PrivateStream](#PrivateStream) | repeated | Список стримов |
+
+
+
+
+
+
+<a name="-GetStreamRecentMessagesIn"></a>
+
+### GetStreamRecentMessagesIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| stream_id | [string](#string) |  | ID стрима, из которого достаем сообщения |
+| offset | [string](#string) |  | временная метка для offset (RFC3339) |
+| limit | [int32](#int32) |  | количество сообщений для возврата |
+
+
+
+
+
+
+<a name="-GetStreamRecentMessagesOut"></a>
+
+### GetStreamRecentMessagesOut
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | messages | [Message](#Message) | repeated | список сообщений |
+
+
+
+
+
+
+<a name="-GetStreamSubscribeTokenIn"></a>
+
+### GetStreamSubscribeTokenIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| stream_id | [string](#string) |  | ID стрима для получения subscribe токена |
+
+
+
+
+
+
+<a name="-GetStreamSubscribeTokenOut"></a>
+
+### GetStreamSubscribeTokenOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| token | [string](#string) |  | JWT токен для подписки на канал стрима |
+| expires_at | [int64](#int64) |  | время истечения токена (unix timestamp) |
+| channel | [string](#string) |  | канал для подписки в Centrifugo |
+
+
+
+
+
+
+<a name="-GetUserActiveStreamsOut"></a>
+
+### GetUserActiveStreamsOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| stream_ids | [string](#string) | repeated | Список ID стримов где пользователь является участником |
 
 
 
@@ -208,6 +243,78 @@
 
 
 
+
+<a name="-PrivateStream"></a>
+
+### PrivateStream
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| stream_id | [string](#string) |  | ID стрима |
+| last_message_content | [string](#string) |  | Контент последнего сообщения |
+| stream_name | [string](#string) |  | Название стрима |
+| avatar_url | [string](#string) |  | Аватарка стрима |
+| last_message_timestamp | [string](#string) |  | Время отправки последнего сообщения |
+
+
+
+
+
+
+<a name="-SendMessageIn"></a>
+
+### SendMessageIn
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| stream_id | [string](#string) |  | ID стрима |
+| content | [string](#string) |  | текст сообщения |
+| parent_id | [string](#string) | optional | ID сообщения для reply (опционально) |
+| root_id | [string](#string) | optional | ID корневого сообщения треда (опционально) |
+| message_type | [string](#string) |  | тип сообщения (text, image, file) |
+
+
+
+
+
+
+<a name="-SendMessageOut"></a>
+
+### SendMessageOut
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| message_id | [string](#string) |  | ID созданного сообщения |
+| sent_at | [string](#string) |  | время отправки |
+
+
+
+
+
+
+<a name="-StreamSubscription"></a>
+
+### StreamSubscription
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| stream_id | [string](#string) |  | ID стрима |
+| token | [string](#string) |  | JWT токен для подписки |
+| expires_at | [int64](#int64) |  | время истечения токена |
+| channel | [string](#string) |  | канал для подписки в Centrifugo |
+
+
+
+
+
  
 
  
@@ -222,11 +329,14 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| CreatePrivateChat | [.CreatePrivateChatIn](#CreatePrivateChatIn) | [.CreatePrivateChatOut](#CreatePrivateChatOut) |  |
-| GetChats | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetChatsOut](#GetChatsOut) |  |
-| GetPrivateRecentMessages | [.GetPrivateRecentMessagesIn](#GetPrivateRecentMessagesIn) | [.GetPrivateRecentMessagesOut](#GetPrivateRecentMessagesOut) |  |
-| DeletePrivateMessage | [.DeletePrivateMessageIn](#DeletePrivateMessageIn) | [.DeletePrivateMessageOut](#DeletePrivateMessageOut) |  |
-| EditPrivateMessage | [.EditPrivateMessageIn](#EditPrivateMessageIn) | [.EditPrivateMessageOut](#EditPrivateMessageOut) |  |
+| CreateStream | [.CreateStreamIn](#CreateStreamIn) | [.CreateStreamOut](#CreateStreamOut) |  |
+| SendMessage | [.SendMessageIn](#SendMessageIn) | [.SendMessageOut](#SendMessageOut) |  |
+| GetPrivateStreams | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetPrivateStreamsOut](#GetPrivateStreamsOut) |  |
+| GetStreamRecentMessages | [.GetStreamRecentMessagesIn](#GetStreamRecentMessagesIn) | [.GetStreamRecentMessagesOut](#GetStreamRecentMessagesOut) |  |
+| GetConnectAccessToken | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetConnectAccessTokenOut](#GetConnectAccessTokenOut) |  |
+| GetStreamSubscribeToken | [.GetStreamSubscribeTokenIn](#GetStreamSubscribeTokenIn) | [.GetStreamSubscribeTokenOut](#GetStreamSubscribeTokenOut) |  |
+| GetUserActiveStreams | [.google.protobuf.Empty](#google-protobuf-Empty) | [.GetUserActiveStreamsOut](#GetUserActiveStreamsOut) |  |
+| GetBatchSubscribeTokens | [.GetBatchSubscribeTokensIn](#GetBatchSubscribeTokensIn) | [.GetBatchSubscribeTokensOut](#GetBatchSubscribeTokensOut) |  |
 
  
 

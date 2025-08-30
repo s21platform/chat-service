@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"net"
 
-	_ "github.com/lib/pq" // PostgreSQL driver
 	"google.golang.org/grpc"
 
 	logger_lib "github.com/s21platform/logger-lib"
 
+	"github.com/s21platform/chat-service/internal/client/centrifugo"
 	"github.com/s21platform/chat-service/internal/client/user"
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/infra"
+	"github.com/s21platform/chat-service/internal/pkg/jwt"
+	"github.com/s21platform/chat-service/internal/pkg/tx"
+	"github.com/s21platform/chat-service/internal/pkg/validator"
 	db "github.com/s21platform/chat-service/internal/repository/postgres"
 	"github.com/s21platform/chat-service/internal/service"
 	"github.com/s21platform/chat-service/pkg/chat"
@@ -24,13 +27,20 @@ func main() {
 	dbRepo := db.New(cfg)
 	defer dbRepo.Close()
 
-	userClient := client.NewService(cfg)
+	userClient := user.New(cfg)
 
-	chatService := service.New(dbRepo, userClient)
+	centrifugeClient := centrifugo.New(cfg)
+	defer centrifugeClient.Close()
+
+	vldtr := validator.New()
+	jwtGenerator := jwt.New(cfg.Centrifuge.JWTSecret)
+
+	chatService := service.New(dbRepo, userClient, centrifugeClient, vldtr, jwtGenerator)
 	server := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			infra.AuthInterceptor,
 			infra.Logger(logger),
+			tx.TxMiddleware(dbRepo),
 		),
 	)
 

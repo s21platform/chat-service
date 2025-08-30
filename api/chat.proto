@@ -5,69 +5,106 @@ option go_package = "pkg/chat";
 import  "google/protobuf/empty.proto";
 
 service ChatService {
-  rpc CreatePrivateChat(CreatePrivateChatIn) returns (CreatePrivateChatOut){};
-  rpc GetChats(google.protobuf.Empty) returns (GetChatsOut){};
-  rpc GetPrivateRecentMessages(GetPrivateRecentMessagesIn) returns (GetPrivateRecentMessagesOut){};
-
-  rpc DeletePrivateMessage(DeletePrivateMessageIn) returns (DeletePrivateMessageOut){};
-  rpc EditPrivateMessage(EditPrivateMessageIn) returns (EditPrivateMessageOut){};
+  rpc CreateStream(CreateStreamIn) returns (CreateStreamOut){};
+  rpc SendMessage(SendMessageIn) returns (SendMessageOut){};
+  rpc GetPrivateStreams(google.protobuf.Empty) returns (GetPrivateStreamsOut){};
+  rpc GetStreamRecentMessages(GetStreamRecentMessagesIn) returns (GetStreamRecentMessagesOut){};
+  rpc GetConnectAccessToken(google.protobuf.Empty) returns (GetConnectAccessTokenOut){};
+  rpc GetStreamSubscribeToken(GetStreamSubscribeTokenIn) returns (GetStreamSubscribeTokenOut){};
+  rpc GetUserActiveStreams(google.protobuf.Empty) returns (GetUserActiveStreamsOut){};
+  rpc GetBatchSubscribeTokens(GetBatchSubscribeTokensIn) returns (GetBatchSubscribeTokensOut){};
 }
 
-message CreatePrivateChatIn {
-  string companion_uuid = 1;  // uuid второго пользователя, с которым будет идти переписка
+message ChatUser {
+  string id = 1;       // id пользователя
+  string metadata = 2; // метаданные пользователя
 }
 
-message CreatePrivateChatOut {
-  string new_chat_uuid = 1; // uuid созданного чата
+message CreateStreamIn {
+  repeated ChatUser users = 1; // пользователи стрима
+  string type = 2;             // тип стрима
+  string chat_metadata = 3;    // метаданные чата
+  string creator_metadata = 4; // метаданные создателя
 }
 
-message Chat {
-  string last_message = 1;           // Контент последнего сообщения
-  string chat_name = 2;              // Название чата
-  string avatar_url = 3;             // Аватарка чата
+message CreateStreamOut {
+  string id = 1; // id созданного стрима
+}
+
+message PrivateStream {
+  string stream_id = 5  ;            // ID стрима
+  string last_message_content = 1;   // Контент последнего сообщения
+  string stream_name = 2;            // Название стрима
+  string avatar_url = 3;             // Аватарка стрима
   string last_message_timestamp = 4; // Время отправки последнего сообщения
-  string chat_uuid = 5;              // UUID чата
 }
 
-message GetChatsOut {
-  repeated Chat chats = 1;  // Список чатов
+message GetPrivateStreamsOut {
+  repeated PrivateStream streams = 1; // Список стримов
 }
 
 message Message {
-  string uuid = 1;             // uuid пользователя
-  string content = 2;         // само сообщение
-  string sent_at = 3;         // время отправки
-  string updated_at = 4;      // время обновления
-  string root_uuid = 5;       // uuid корневого сообщения
-  string parent_uuid = 6;     // uuid сообщения, на которое идет прямой ответ
+  string uuid = 1;        // uuid пользователя
+  string content = 2;     // само сообщение
+  string sent_at = 3;     // время отправки
+  string updated_at = 4;  // время обновления
+  string root_uuid = 5;   // uuid корневого сообщения
+  string parent_uuid = 6; // uuid сообщения, на которое идет прямой ответ
 }
 
-message GetPrivateRecentMessagesIn {
-  string chat_uuid = 1;   // uuid чата, из которого достаем сообщения
+message GetStreamRecentMessagesIn {
+  string stream_id = 1; // ID стрима, из которого достаем сообщения
+  string offset = 2;    // временная метка для offset (RFC3339)
+  int32 limit = 3;      // количество сообщений для возврата
 }
 
-message GetPrivateRecentMessagesOut {
+message GetStreamRecentMessagesOut {
   repeated Message messages = 1;  // список сообщений
 }
 
-message DeletePrivateMessageIn {
-  string chat_uuid = 1;           // uuid чата
-  string message_uuid = 2;        // uuid сообщения
-  string mode = 3;                // тип удаления: у всех или у себя
+message SendMessageIn {
+  string stream_id = 1;          // ID стрима
+  string content = 2;            // текст сообщения
+  optional string parent_id = 3; // ID сообщения для reply (опционально)
+  optional string root_id = 4;   // ID корневого сообщения треда (опционально)
+  string message_type = 5;       // тип сообщения (text, image, file)
 }
 
-message DeletePrivateMessageOut {
-  bool deletion_status = 1;    // статус удаления
+message SendMessageOut {
+  string message_id = 1; // ID созданного сообщения
+  string sent_at = 2;    // время отправки
 }
 
-message EditPrivateMessageIn {
-  string chat_uuid = 1;           // uuid чата
-  string message_uuid = 2;        // uuid сообщения
-  string new_content = 3;         // новый текст сообщения
+message GetConnectAccessTokenOut {
+  string token = 1;      // JWT токен для подключения к Centrifugo
+  int64 expires_at = 2;  // время истечения токена (unix timestamp)
 }
 
-message EditPrivateMessageOut {
-  string message_uuid = 1;    // uuid измененного сообщения
-  string new_content = 2;     // новый текст сообщения
-  string updated_at = 3;      // время обновления сообщения
+message GetStreamSubscribeTokenIn {
+  string stream_id = 1; // ID стрима для получения subscribe токена
+}
+
+message GetStreamSubscribeTokenOut {
+  string token = 1;      // JWT токен для подписки на канал стрима
+  int64 expires_at = 2;  // время истечения токена (unix timestamp)
+  string channel = 3;    // канал для подписки в Centrifugo
+}
+
+message GetUserActiveStreamsOut {
+  repeated string stream_ids = 1; // Список ID стримов, где пользователь является участником
+}
+
+message StreamSubscription {
+  string stream_id = 1;  // ID стрима
+  string token = 2;      // JWT токен для подписки
+  int64 expires_at = 3;  // время истечения токена
+  string channel = 4;    // канал для подписки в Centrifugo
+}
+
+message GetBatchSubscribeTokensIn {
+  repeated string stream_ids = 1; // Список ID стримов для которых нужны токены
+}
+
+message GetBatchSubscribeTokensOut {
+  repeated StreamSubscription subscriptions = 1; // Токены для подписки на стримы
 }
