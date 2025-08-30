@@ -50,20 +50,6 @@ func (mr *MockDBRepoMockRecorder) AddNewUser(ctx, userInfo interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNewUser", reflect.TypeOf((*MockDBRepo)(nil).AddNewUser), ctx, userInfo)
 }
 
-// AddStreamMember mocks base method.
-func (m *MockDBRepo) AddStreamMember(ctx context.Context, streamID, userID, metadata string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddStreamMember", ctx, streamID, userID, metadata)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddStreamMember indicates an expected call of AddStreamMember.
-func (mr *MockDBRepoMockRecorder) AddStreamMember(ctx, streamID, userID, metadata interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStreamMember", reflect.TypeOf((*MockDBRepo)(nil).AddStreamMember), ctx, streamID, userID, metadata)
-}
-
 // AddStreamMembers mocks base method.
 func (m *MockDBRepo) AddStreamMembers(ctx context.Context, streamID string, members []model.StreamMember) error {
 	m.ctrl.T.Helper()
@@ -76,20 +62,6 @@ func (m *MockDBRepo) AddStreamMembers(ctx context.Context, streamID string, memb
 func (mr *MockDBRepoMockRecorder) AddStreamMembers(ctx, streamID, members interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStreamMembers", reflect.TypeOf((*MockDBRepo)(nil).AddStreamMembers), ctx, streamID, members)
-}
-
-// AddUserSubscription mocks base method.
-func (m *MockDBRepo) AddUserSubscription(ctx context.Context, userID, channel string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUserSubscription", ctx, userID, channel)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddUserSubscription indicates an expected call of AddUserSubscription.
-func (mr *MockDBRepoMockRecorder) AddUserSubscription(ctx, userID, channel interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUserSubscription", reflect.TypeOf((*MockDBRepo)(nil).AddUserSubscription), ctx, userID, channel)
 }
 
 // AddUserSubscriptions mocks base method.

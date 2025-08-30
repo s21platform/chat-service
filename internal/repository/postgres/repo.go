@@ -148,37 +148,6 @@ func (r *Repository) AddNewUser(ctx context.Context, userInfo *model.StreamMembe
 	return err
 }
 
-func (r *Repository) AddStreamMember(ctx context.Context, streamID, userID, metadata string) error {
-	query, args, err := sq.Insert("stream_members").
-		Columns("stream_id", "user_id", "metadata").
-		Values(streamID, userID, metadata).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
-
-	return err
-}
-
-func (r *Repository) AddUserSubscription(ctx context.Context, userID, channel string) error {
-	query, args, err := sq.Insert("user_subscriptions").
-		Columns("user_id", "channel").
-		Values(userID, channel).
-		Suffix("ON CONFLICT (user_id, channel) DO NOTHING").
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
-
-	return err
-}
-
 func (r *Repository) AddStreamMembers(ctx context.Context, streamID string, members []model.StreamMember) error {
 	if len(members) == 0 {
 		return nil

@@ -10,10 +10,8 @@ import (
 
 type DBRepo interface {
 	CreateStream(ctx context.Context, streamType, metadata, createdBy string) (string, error)
-	AddStreamMember(ctx context.Context, streamID, userID, metadata string) error
 	AddStreamMembers(ctx context.Context, streamID string, members []model.StreamMember) error
 	AddNewUser(ctx context.Context, userInfo *model.StreamMemberParams) error
-	AddUserSubscription(ctx context.Context, userID, channel string) error
 	AddUserSubscriptions(ctx context.Context, subscriptions []model.UserSubscription) error
 	SaveMessage(ctx context.Context, message *model.Message) error
 	IsStreamMember(ctx context.Context, streamID, userID string) (bool, error)
