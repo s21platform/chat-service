@@ -2,6 +2,7 @@ package tx
 
 import (
 	"context"
+	"net/http"
 
 	"google.golang.org/grpc"
 )
@@ -14,7 +15,7 @@ func withDBRepoContext(ctx context.Context, repo DBRepo) context.Context {
 	return context.WithValue(ctx, KeyTx, Tx{DbRepo: repo})
 }
 
-func TxMiddleware(db DBRepo) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+func TxMiddlewareGRPC(db DBRepo) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
 	return func(
 		ctx context.Context,
@@ -23,6 +24,16 @@ func TxMiddleware(db DBRepo) func(ctx context.Context, req interface{}, info *gr
 		handler grpc.UnaryHandler) (
 		interface{}, error) {
 		return handler(withDBRepoContext(ctx, db), req)
+	}
+}
+
+func TxMiddlewareHTTP(db DBRepo) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := withDBRepoContext(r.Context(), db)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		})
 	}
 }
 

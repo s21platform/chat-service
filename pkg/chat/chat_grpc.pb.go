@@ -7,11 +7,7 @@
 package chat
 
 import (
-	context "context"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,29 +15,10 @@ import (
 // Requires gRPC-Go v1.64.0 or later.
 const _ = grpc.SupportPackageIsVersion9
 
-const (
-	ChatService_CreateStream_FullMethodName            = "/ChatService/CreateStream"
-	ChatService_SendMessage_FullMethodName             = "/ChatService/SendMessage"
-	ChatService_GetPrivateStreams_FullMethodName       = "/ChatService/GetPrivateStreams"
-	ChatService_GetStreamRecentMessages_FullMethodName = "/ChatService/GetStreamRecentMessages"
-	ChatService_GetConnectAccessToken_FullMethodName   = "/ChatService/GetConnectAccessToken"
-	ChatService_GetStreamSubscribeToken_FullMethodName = "/ChatService/GetStreamSubscribeToken"
-	ChatService_GetUserActiveStreams_FullMethodName    = "/ChatService/GetUserActiveStreams"
-	ChatService_GetBatchSubscribeTokens_FullMethodName = "/ChatService/GetBatchSubscribeTokens"
-)
-
 // ChatServiceClient is the client API for ChatService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
-	CreateStream(ctx context.Context, in *CreateStreamIn, opts ...grpc.CallOption) (*CreateStreamOut, error)
-	SendMessage(ctx context.Context, in *SendMessageIn, opts ...grpc.CallOption) (*SendMessageOut, error)
-	GetPrivateStreams(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetPrivateStreamsOut, error)
-	GetStreamRecentMessages(ctx context.Context, in *GetStreamRecentMessagesIn, opts ...grpc.CallOption) (*GetStreamRecentMessagesOut, error)
-	GetConnectAccessToken(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetConnectAccessTokenOut, error)
-	GetStreamSubscribeToken(ctx context.Context, in *GetStreamSubscribeTokenIn, opts ...grpc.CallOption) (*GetStreamSubscribeTokenOut, error)
-	GetUserActiveStreams(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserActiveStreamsOut, error)
-	GetBatchSubscribeTokens(ctx context.Context, in *GetBatchSubscribeTokensIn, opts ...grpc.CallOption) (*GetBatchSubscribeTokensOut, error)
 }
 
 type chatServiceClient struct {
@@ -52,98 +29,10 @@ func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
 	return &chatServiceClient{cc}
 }
 
-func (c *chatServiceClient) CreateStream(ctx context.Context, in *CreateStreamIn, opts ...grpc.CallOption) (*CreateStreamOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateStreamOut)
-	err := c.cc.Invoke(ctx, ChatService_CreateStream_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) SendMessage(ctx context.Context, in *SendMessageIn, opts ...grpc.CallOption) (*SendMessageOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SendMessageOut)
-	err := c.cc.Invoke(ctx, ChatService_SendMessage_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetPrivateStreams(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetPrivateStreamsOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetPrivateStreamsOut)
-	err := c.cc.Invoke(ctx, ChatService_GetPrivateStreams_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetStreamRecentMessages(ctx context.Context, in *GetStreamRecentMessagesIn, opts ...grpc.CallOption) (*GetStreamRecentMessagesOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetStreamRecentMessagesOut)
-	err := c.cc.Invoke(ctx, ChatService_GetStreamRecentMessages_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetConnectAccessToken(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetConnectAccessTokenOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetConnectAccessTokenOut)
-	err := c.cc.Invoke(ctx, ChatService_GetConnectAccessToken_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetStreamSubscribeToken(ctx context.Context, in *GetStreamSubscribeTokenIn, opts ...grpc.CallOption) (*GetStreamSubscribeTokenOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetStreamSubscribeTokenOut)
-	err := c.cc.Invoke(ctx, ChatService_GetStreamSubscribeToken_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetUserActiveStreams(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserActiveStreamsOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserActiveStreamsOut)
-	err := c.cc.Invoke(ctx, ChatService_GetUserActiveStreams_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetBatchSubscribeTokens(ctx context.Context, in *GetBatchSubscribeTokensIn, opts ...grpc.CallOption) (*GetBatchSubscribeTokensOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetBatchSubscribeTokensOut)
-	err := c.cc.Invoke(ctx, ChatService_GetBatchSubscribeTokens_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility.
 type ChatServiceServer interface {
-	CreateStream(context.Context, *CreateStreamIn) (*CreateStreamOut, error)
-	SendMessage(context.Context, *SendMessageIn) (*SendMessageOut, error)
-	GetPrivateStreams(context.Context, *emptypb.Empty) (*GetPrivateStreamsOut, error)
-	GetStreamRecentMessages(context.Context, *GetStreamRecentMessagesIn) (*GetStreamRecentMessagesOut, error)
-	GetConnectAccessToken(context.Context, *emptypb.Empty) (*GetConnectAccessTokenOut, error)
-	GetStreamSubscribeToken(context.Context, *GetStreamSubscribeTokenIn) (*GetStreamSubscribeTokenOut, error)
-	GetUserActiveStreams(context.Context, *emptypb.Empty) (*GetUserActiveStreamsOut, error)
-	GetBatchSubscribeTokens(context.Context, *GetBatchSubscribeTokensIn) (*GetBatchSubscribeTokensOut, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -154,30 +43,6 @@ type ChatServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedChatServiceServer struct{}
 
-func (UnimplementedChatServiceServer) CreateStream(context.Context, *CreateStreamIn) (*CreateStreamOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateStream not implemented")
-}
-func (UnimplementedChatServiceServer) SendMessage(context.Context, *SendMessageIn) (*SendMessageOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
-}
-func (UnimplementedChatServiceServer) GetPrivateStreams(context.Context, *emptypb.Empty) (*GetPrivateStreamsOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPrivateStreams not implemented")
-}
-func (UnimplementedChatServiceServer) GetStreamRecentMessages(context.Context, *GetStreamRecentMessagesIn) (*GetStreamRecentMessagesOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStreamRecentMessages not implemented")
-}
-func (UnimplementedChatServiceServer) GetConnectAccessToken(context.Context, *emptypb.Empty) (*GetConnectAccessTokenOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetConnectAccessToken not implemented")
-}
-func (UnimplementedChatServiceServer) GetStreamSubscribeToken(context.Context, *GetStreamSubscribeTokenIn) (*GetStreamSubscribeTokenOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStreamSubscribeToken not implemented")
-}
-func (UnimplementedChatServiceServer) GetUserActiveStreams(context.Context, *emptypb.Empty) (*GetUserActiveStreamsOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserActiveStreams not implemented")
-}
-func (UnimplementedChatServiceServer) GetBatchSubscribeTokens(context.Context, *GetBatchSubscribeTokensIn) (*GetBatchSubscribeTokensOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBatchSubscribeTokens not implemented")
-}
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 func (UnimplementedChatServiceServer) testEmbeddedByValue()                     {}
 
@@ -199,190 +64,13 @@ func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
 	s.RegisterService(&ChatService_ServiceDesc, srv)
 }
 
-func _ChatService_CreateStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateStreamIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).CreateStream(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_CreateStream_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).CreateStream(ctx, req.(*CreateStreamIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendMessageIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).SendMessage(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_SendMessage_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).SendMessage(ctx, req.(*SendMessageIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetPrivateStreams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetPrivateStreams(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetPrivateStreams_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetPrivateStreams(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetStreamRecentMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStreamRecentMessagesIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetStreamRecentMessages(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetStreamRecentMessages_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetStreamRecentMessages(ctx, req.(*GetStreamRecentMessagesIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetConnectAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetConnectAccessToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetConnectAccessToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetConnectAccessToken(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetStreamSubscribeToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStreamSubscribeTokenIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetStreamSubscribeToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetStreamSubscribeToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetStreamSubscribeToken(ctx, req.(*GetStreamSubscribeTokenIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetUserActiveStreams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetUserActiveStreams(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetUserActiveStreams_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetUserActiveStreams(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetBatchSubscribeTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBatchSubscribeTokensIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetBatchSubscribeTokens(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetBatchSubscribeTokens_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetBatchSubscribeTokens(ctx, req.(*GetBatchSubscribeTokensIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ChatService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "CreateStream",
-			Handler:    _ChatService_CreateStream_Handler,
-		},
-		{
-			MethodName: "SendMessage",
-			Handler:    _ChatService_SendMessage_Handler,
-		},
-		{
-			MethodName: "GetPrivateStreams",
-			Handler:    _ChatService_GetPrivateStreams_Handler,
-		},
-		{
-			MethodName: "GetStreamRecentMessages",
-			Handler:    _ChatService_GetStreamRecentMessages_Handler,
-		},
-		{
-			MethodName: "GetConnectAccessToken",
-			Handler:    _ChatService_GetConnectAccessToken_Handler,
-		},
-		{
-			MethodName: "GetStreamSubscribeToken",
-			Handler:    _ChatService_GetStreamSubscribeToken_Handler,
-		},
-		{
-			MethodName: "GetUserActiveStreams",
-			Handler:    _ChatService_GetUserActiveStreams_Handler,
-		},
-		{
-			MethodName: "GetBatchSubscribeTokens",
-			Handler:    _ChatService_GetBatchSubscribeTokens_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/chat.proto",
+	Methods:     []grpc.MethodDesc{},
+	Streams:     []grpc.StreamDesc{},
+	Metadata:    "api/chat.proto",
 }

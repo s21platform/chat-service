@@ -4,18 +4,23 @@ go 1.24.0
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/go-chi/chi/v5 v5.2.3
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
+	github.com/oapi-codegen/runtime v1.1.2
 	github.com/s21platform/avatar-service v0.0.0-20250413162426-a937ac435e67
 	github.com/s21platform/kafka-lib v1.0.2
 	github.com/s21platform/logger-lib v0.0.6
 	github.com/s21platform/metrics-lib v0.0.9
 	github.com/s21platform/user-proto v0.0.12
 	github.com/s21platform/user-service v0.0.3
+	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/sync v0.16.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.6
 )
@@ -23,8 +28,8 @@ require (
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/alexcesaro/statsd v2.0.0+incompatible // indirect
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

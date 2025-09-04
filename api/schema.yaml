@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  title: Chat Service API
+  version: 1.0.0
+
+paths:
+  /api/chat/streams:
+    post:
+      summary: Create a new stream
+      operationId: CreateStream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStreamRequest'
+      responses:
+        '200':
+          description: Stream created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateStreamResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/streams/private:
+    get:
+      summary: Get user's private streams
+      operationId: GetPrivateStreams
+      responses:
+        '200':
+          description: Private streams retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPrivateStreamsResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/streams/{stream_id}/messages:
+    get:
+      summary: Get recent messages from a stream
+      operationId: GetStreamRecentMessages
+      parameters:
+        - name: stream_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Timestamp offset in RFC3339 format
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of messages to return
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStreamRecentMessagesResponse'
+        '403':
+          description: User is not a member of the stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Send a message to a stream
+      operationId: SendMessage
+      parameters:
+        - name: stream_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/tokens/connect:
+    get:
+      summary: Get Centrifugo connection token
+      operationId: GetConnectAccessToken
+      responses:
+        '200':
+          description: Connect token retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetConnectAccessTokenResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/streams/{stream_id}/tokens/subscribe:
+    get:
+      summary: Get subscribe token for a specific stream
+      operationId: GetStreamSubscribeToken
+      parameters:
+        - name: stream_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscribe token retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStreamSubscribeTokenResponse'
+        '403':
+          description: User is not a member of the stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/user/streams:
+    get:
+      summary: Get user's active streams
+      operationId: GetUserActiveStreams
+      responses:
+        '200':
+          description: Active streams retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserActiveStreamsResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/tokens/subscribe/batch:
+    post:
+      summary: Get batch subscribe tokens for multiple streams
+      operationId: GetBatchSubscribeTokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetBatchSubscribeTokensRequest'
+      responses:
+        '200':
+          description: Batch subscribe tokens retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetBatchSubscribeTokensResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ChatUser:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: User ID
+        metadata:
+          type: string
+          description: User metadata
+
+    CreateStreamRequest:
+      type: object
+      required:
+        - users
+        - type
+        - chat_metadata
+        - creator_metadata
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+        type:
+          type: string
+          description: Stream type
+        chat_metadata:
+          type: string
+          description: Chat metadata
+        creator_metadata:
+          type: string
+          description: Creator metadata
+
+    CreateStreamResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Created stream ID
+
+    PrivateStream:
+      type: object
+      required:
+        - stream_id
+        - stream_name
+      properties:
+        stream_id:
+          type: string
+          description: Stream ID
+        last_message_content:
+          type: string
+          description: Last message content
+        stream_name:
+          type: string
+          description: Stream name
+        avatar_url:
+          type: string
+          description: Stream avatar URL
+        last_message_timestamp:
+          type: string
+          description: Last message timestamp
+
+    GetPrivateStreamsResponse:
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivateStream'
+
+    Message:
+      type: object
+      required:
+        - uuid
+        - content
+        - sent_at
+      properties:
+        uuid:
+          type: string
+          description: Message UUID
+        content:
+          type: string
+          description: Message content
+        sent_at:
+          type: string
+          description: Send timestamp
+        updated_at:
+          type: string
+          description: Update timestamp
+        root_uuid:
+          type: string
+          description: Root message UUID
+        parent_uuid:
+          type: string
+          description: Parent message UUID
+
+    GetStreamRecentMessagesResponse:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+
+    SendMessageRequest:
+      type: object
+      required:
+        - content
+        - message_type
+      properties:
+        content:
+          type: string
+          description: Message content
+        parent_id:
+          type: string
+          description: Parent message ID (optional for replies)
+        root_id:
+          type: string
+          description: Root message ID (optional for threads)
+        message_type:
+          type: string
+          description: Message type (text, image, file)
+
+    SendMessageResponse:
+      type: object
+      required:
+        - message_id
+        - sent_at
+      properties:
+        message_id:
+          type: string
+          description: Created message ID
+        sent_at:
+          type: string
+          description: Send timestamp
+
+    GetConnectAccessTokenResponse:
+      type: object
+      required:
+        - token
+        - expires_at
+      properties:
+        token:
+          type: string
+          description: JWT token for Centrifugo connection
+        expires_at:
+          type: integer
+          format: int64
+          description: Token expiration timestamp
+
+    GetStreamSubscribeTokenResponse:
+      type: object
+      required:
+        - token
+        - expires_at
+        - channel
+      properties:
+        token:
+          type: string
+          description: JWT token for stream subscription
+        expires_at:
+          type: integer
+          format: int64
+          description: Token expiration timestamp
+        channel:
+          type: string
+          description: Centrifugo channel name
+
+    GetUserActiveStreamsResponse:
+      type: object
+      required:
+        - stream_ids
+      properties:
+        stream_ids:
+          type: array
+          items:
+            type: string
+          description: List of active stream IDs
+
+    GetBatchSubscribeTokensRequest:
+      type: object
+      required:
+        - stream_ids
+      properties:
+        stream_ids:
+          type: array
+          items:
+            type: string
+          description: List of stream IDs
+
+    StreamSubscription:
+      type: object
+      required:
+        - stream_id
+        - token
+        - expires_at
+        - channel
+      properties:
+        stream_id:
+          type: string
+          description: Stream ID
+        token:
+          type: string
+          description: JWT subscribe token
+        expires_at:
+          type: integer
+          format: int64
+          description: Token expiration timestamp
+        channel:
+          type: string
+          description: Centrifugo channel name
+
+    GetBatchSubscribeTokensResponse:
+      type: object
+      required:
+        - subscriptions
+      properties:
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamSubscription'
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message

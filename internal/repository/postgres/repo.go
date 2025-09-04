@@ -260,11 +260,11 @@ func (r *Repository) GetPrivateStreams(ctx context.Context, requesterID string) 
 		Join("stream_members sm1 ON s.id = sm1.stream_id").
 		Join("stream_members sm2 ON s.id = sm2.stream_id").
 		Join("users u_companion ON sm2.user_id = u_companion.id").
-		Where(sq.Eq{
-			"sm1.user_id": requesterID,
-			"sm2.user_id": sq.NotEq{"sm1.user_id": requesterID},
-			"sm1.left_at": nil,
-			"sm2.left_at": nil,
+		Where(sq.And{
+			sq.Eq{"sm1.user_id": requesterID},
+			sq.NotEq{"sm2.user_id": requesterID},
+			sq.Eq{"sm1.left_at": nil},
+			sq.Eq{"sm2.left_at": nil},
 		}).
 		OrderBy("s.created_at DESC").
 		PlaceholderFormat(sq.Dollar)
