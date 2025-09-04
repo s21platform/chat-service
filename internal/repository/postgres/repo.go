@@ -2,14 +2,12 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"log"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 
 	"github.com/s21platform/chat-service/internal/config"
 	"github.com/s21platform/chat-service/internal/model"
@@ -37,241 +35,45 @@ func (r *Repository) Close() {
 	_ = r.connection.Close()
 }
 
-func (r *Repository) CreatePrivateChat(ctx context.Context) (string, error) {
-	query, args, err := sq.Insert("chats").
-		Columns("created_at").
-		Values(time.Now()).
-		Suffix("RETURNING uuid").
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return "", fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var chatUUID string
-	err = r.connection.GetContext(ctx, &chatUUID, query, args...)
-	if err != nil {
-		return "", err
-	}
-
-	return chatUUID, nil
-}
-
-func (r *Repository) AddPrivateChatMember(ctx context.Context, chatUUID string, member *model.ChatMemberParams) error {
-	query, args, err := sq.Insert("chats_user").
-		Columns("chat_uuid", "user_uuid", "username", "avatar_link").
-		Values(chatUUID, member.UserUUID, member.Nickname, member.AvatarLink).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	_, err = r.connection.ExecContext(ctx, query, args...)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *Repository) GetPrivateChats(ctx context.Context, userUUID string) (*model.ChatInfoList, error) {
-	query, args, err := sq.Select(
-		"COALESCE(m.content, '') AS content",
-		"(SELECT username FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid != $1) AS chat_name",
-		"(SELECT avatar_link FROM chats_user WHERE chat_uuid = c.uuid AND user_uuid != $1) AS avatar_link",
-		"(SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid) AS created_at",
-		"c.uuid",
-	).
-		From("chats_user cu").
-		Join("chats c ON c.uuid = cu.chat_uuid").
-		LeftJoin("messages m ON c.uuid = m.chat_uuid AND m.sent_at = (SELECT MAX(sent_at) FROM messages WHERE chat_uuid = c.uuid)").
-		Where(sq.Eq{"cu.user_uuid": userUUID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var chats model.ChatInfoList
-	err = r.connection.SelectContext(ctx, &chats, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &chats, nil
-}
-
-func (r *Repository) GetGroupChats(ctx context.Context, userUUID string) (*model.ChatInfoList, error) {
-	query, args, err := sq.Select(
-		"COALESCE(gm.content, '') AS content",
-		"gc.chat_name",
-		"gc.avatar_link",
-		"COALESCE((SELECT MAX(sent_at) FROM messages WHERE chat_uuid = gc.uuid), gc.created_at) AS created_at",
-		"gc.uuid",
-	).
-		From("group_chats_user gcu").
-		Join("group_chats gc ON gc.uuid = gcu.chat_uuid").
-		LeftJoin("group_messages gm ON gc.uuid = gm.chat_uuid AND gm.sent_at = (SELECT MAX(sent_at) FROM group_messages WHERE chat_uuid = gc.uuid)").
-		Where(sq.Eq{"gcu.user_uuid": userUUID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var chats model.ChatInfoList
-	err = r.connection.SelectContext(ctx, &chats, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &chats, nil
-}
-
-func (r *Repository) GetPrivateRecentMessages(ctx context.Context, chatUUID string, userUUID string) (*model.MessageList, error) {
-	query, args, err := sq.Select(
-		"sender_uuid",
+func (r *Repository) GetStreamRecentMessages(ctx context.Context, streamID string, offset string, limit int32) (*model.MessageList, error) {
+	queryBuilder := sq.Select(
+		"id",
+		"stream_id",
+		"sender_id",
+		"type",
 		"content",
+		"root_id",
+		"parent_id",
 		"sent_at",
-		"COALESCE(updated_at, sent_at) AS updated_at",
-		"root_uuid",
-		"parent_uuid",
+		"updated_at",
 	).
 		From("messages").
-		Where(sq.Eq{"chat_uuid": chatUUID}).
-		Where(sq.Or{
-			sq.Eq{"delete_format": nil},
-			sq.And{
-				sq.Eq{"delete_format": "self"},
-				sq.NotEq{"deleted_by": userUUID},
-			},
-		}).
-		OrderBy("sent_at DESC").
-		Limit(15).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
+		Where(sq.Eq{"stream_id": streamID}).
+		Where(sq.Eq{"deleted_at": nil}).
+		OrderBy("sent_at DESC")
+
+	if offset != "" {
+		queryBuilder = queryBuilder.Where(sq.LtOrEq{"sent_at": offset})
+	}
+
+	if limit > 0 {
+		queryBuilder = queryBuilder.Limit(uint64(limit))
+	} else {
+		queryBuilder = queryBuilder.Limit(50) // дефолтный лимит
+	}
+
+	query, args, err := queryBuilder.PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build sql query: %v", err)
 	}
 
 	var messages model.MessageList
-	err = r.connection.SelectContext(ctx, &messages, query, args...)
+	err = r.Chk(ctx).SelectContext(ctx, &messages, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
 	return &messages, nil
-}
-
-func (r *Repository) GetPrivateDeletionInfo(ctx context.Context, messageID string) (*model.DeletionInfo, error) {
-	query, args, err := sq.Select(
-		"COALESCE(delete_format::text, '') AS delete_format",
-		"COALESCE(deleted_by::text, '') AS deleted_by",
-		"COALESCE(to_char(deleted_at, 'YYYY-MM-DD\"T\"HH24:MI:SSZ'), '') AS deleted_at").
-		From("messages").
-		Where(sq.Eq{"uuid": messageID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var deletionInfo model.DeletionInfo
-	err = r.connection.GetContext(ctx, &deletionInfo, query, args...)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-
-	return &deletionInfo, nil
-}
-
-func (r *Repository) EditPrivateMessage(ctx context.Context, messageUUID string, newContent string) (*model.EditedMessage, error) {
-	query, args, err := sq.Update("messages").
-		Set("content", newContent).
-		Set("updated_at", sq.Expr("CURRENT_TIMESTAMP")).
-		Where(sq.Eq{"uuid": messageUUID}).
-		Suffix("RETURNING uuid, content, updated_at").
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var editedPrivateMessage model.EditedMessage
-	err = r.connection.GetContext(ctx, &editedPrivateMessage, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &editedPrivateMessage, nil
-}
-
-func (r *Repository) DeletePrivateMessage(ctx context.Context, userUUID, messageID, mode string) (bool, error) {
-	query, args, err := sq.Update("messages").
-		Set("deleted_by", userUUID).
-		Set("delete_format", mode).
-		Set("deleted_at", sq.Expr("CURRENT_TIMESTAMP")).
-		Where(sq.Eq{"uuid": messageID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return false, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	_, err = r.connection.ExecContext(ctx, query, args...)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-func (r *Repository) IsChatMember(ctx context.Context, chatUUID, userUUID string) (bool, error) {
-	query, args, err := sq.
-		Select("COUNT(*) > 0").
-		From("chats_user").
-		Where(sq.And{
-			sq.Eq{"chat_uuid": chatUUID},
-			sq.Eq{"user_uuid": userUUID},
-		}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return false, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var isMember bool
-	err = r.connection.GetContext(ctx, &isMember, query, args...)
-	if err != nil {
-		return false, err
-	}
-
-	return isMember, nil
-}
-
-func (r *Repository) IsMessageOwner(ctx context.Context, chatUUID, messageUUID, userUUID string) (bool, error) {
-	query, args, err := sq.
-		Select("COUNT(*) > 0").
-		From("messages").
-		Where(sq.And{
-			sq.Eq{"uuid": messageUUID},
-			sq.Eq{"chat_uuid": chatUUID},
-			sq.Eq{"sender_uuid": userUUID},
-		}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		return false, fmt.Errorf("failed to build sql query: %v", err)
-	}
-
-	var isOwner bool
-	err = r.connection.GetContext(ctx, &isOwner, query, args...)
-	if err != nil {
-		return false, err
-	}
-
-	return isOwner, nil
 }
 
 func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickname string) error {
@@ -284,7 +86,7 @@ func (r *Repository) UpdateUserNickname(ctx context.Context, userUUID, newNickna
 		return fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	_, err = r.connection.ExecContext(ctx, query, args...)
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -302,10 +104,204 @@ func (r *Repository) UpdateUserAvatar(ctx context.Context, userUUID, avatarLink 
 		return fmt.Errorf("failed to build sql query: %v", err)
 	}
 
-	_, err = r.connection.ExecContext(ctx, query, args...)
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *Repository) CreateStream(ctx context.Context, streamType, metadata, createdBy string) (string, error) {
+	query, args, err := sq.Insert("streams").
+		Columns("type", "metadata", "created_by").
+		Values(streamType, metadata, createdBy).
+		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return "", fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	var streamID string
+	err = r.Chk(ctx).GetContext(ctx, &streamID, query, args...)
+	if err != nil {
+		return "", err
+	}
+
+	return streamID, nil
+}
+
+func (r *Repository) AddNewUser(ctx context.Context, userInfo *model.StreamMemberParams) error {
+	query, args, err := sq.Insert("users").
+		Columns("id", "nickname", "avatar_url").
+		Values(userInfo.UserID, userInfo.Nickname, userInfo.AvatarURL).
+		Suffix("ON CONFLICT (id) DO NOTHING").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, query, args...)
+
+	return err
+}
+
+func (r *Repository) AddStreamMembers(ctx context.Context, streamID string, members []model.StreamMember) error {
+	if len(members) == 0 {
+		return nil
+	}
+
+	query := sq.Insert("stream_members").
+		Columns("stream_id", "user_id", "metadata").
+		PlaceholderFormat(sq.Dollar)
+
+	for _, member := range members {
+		query = query.Values(streamID, member.UserID, member.Metadata)
+	}
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, sql, args...)
+	return err
+}
+
+func (r *Repository) SaveMessage(ctx context.Context, message *model.Message) error {
+	query := sq.Insert("messages").
+		Columns("id", "stream_id", "sender_id", "type", "content", "root_id", "parent_id").
+		Values(message.ID, message.StreamID, message.SenderID, message.Type, message.Content, message.RootID, message.ParentID).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("failed to save message: %v", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) IsStreamMember(ctx context.Context, streamID, userID string) (bool, error) {
+	query, args, err := sq.
+		Select("COUNT(*) > 0").
+		From("stream_members").
+		Where(sq.And{
+			sq.Eq{"stream_id": streamID},
+			sq.Eq{"user_id": userID},
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	var isMember bool
+	err = r.Chk(ctx).GetContext(ctx, &isMember, query, args...)
+	if err != nil {
+		return false, fmt.Errorf("failed to check stream membership: %v", err)
+	}
+
+	return isMember, nil
+}
+
+func (r *Repository) AddUserSubscriptions(ctx context.Context, subscriptions []model.UserSubscription) error {
+	query := sq.Insert("user_subscriptions").
+		Columns("user_id", "channel").
+		Suffix("ON CONFLICT (user_id, channel) DO NOTHING").
+		PlaceholderFormat(sq.Dollar)
+
+	for _, sub := range subscriptions {
+		query = query.Values(sub.UserID, sub.Channel)
+	}
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	_, err = r.Chk(ctx).ExecContext(ctx, sql, args...)
+
+	return err
+}
+
+func (r *Repository) GetPrivateStreams(ctx context.Context, requesterID string) (*model.PrivateStreamPreviewList, error) {
+	query := sq.Select(
+		"s.id as stream_id",
+		"u_companion.nickname as stream_name",
+		"u_companion.avatar_url",
+		"("+func() string {
+			sql, _, _ := sq.Select("content").
+				From("messages m2").
+				Where("m2.stream_id = s.id").
+				Where(sq.Eq{"m2.deleted_at": nil}).
+				OrderBy("m2.sent_at DESC").
+				Limit(1).ToSql()
+			return sql
+		}()+") as last_message_content",
+		"("+func() string {
+			sql, _, _ := sq.Select("sent_at").
+				From("messages m2").
+				Where("m2.stream_id = s.id").
+				Where(sq.Eq{"m2.deleted_at": nil}).
+				OrderBy("m2.sent_at DESC").
+				Limit(1).ToSql()
+			return sql
+		}()+") as last_message_timestamp",
+	).
+		From("streams s").
+		Join("stream_members sm1 ON s.id = sm1.stream_id").
+		Join("stream_members sm2 ON s.id = sm2.stream_id").
+		Join("users u_companion ON sm2.user_id = u_companion.id").
+		Where(sq.And{
+			sq.Eq{"sm1.user_id": requesterID},
+			sq.NotEq{"sm2.user_id": requesterID},
+			sq.Eq{"sm1.left_at": nil},
+			sq.Eq{"sm2.left_at": nil},
+		}).
+		OrderBy("s.created_at DESC").
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	var streams model.PrivateStreamPreviewList
+	err = r.Chk(ctx).SelectContext(ctx, &streams, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get streams: %v", err)
+	}
+
+	return &streams, nil
+}
+
+func (r *Repository) GetUserActiveStreams(ctx context.Context, userID string) ([]string, error) {
+	queryBuilder := sq.Select("stream_id").
+		From("stream_members").
+		Where(sq.Eq{
+			"user_id": userID,
+			"left_at": nil,
+		}).
+		PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := queryBuilder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build sql query: %v", err)
+	}
+
+	var streamIDs []string
+	err = r.Chk(ctx).SelectContext(ctx, &streamIDs, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user active streams: %v", err)
+	}
+
+	return streamIDs, nil
 }

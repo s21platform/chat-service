@@ -13,11 +13,11 @@ import (
 )
 
 type Handler struct {
-	dbR DBRepo
+	repository DBRepo
 }
 
-func New(dbR DBRepo) *Handler {
-	return &Handler{dbR: dbR}
+func New(repo DBRepo) *Handler {
+	return &Handler{repository: repo}
 }
 
 func convertMessage(bMessage []byte, target interface{}) error {
@@ -42,7 +42,7 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 		return err
 	}
 
-	err = h.dbR.UpdateUserAvatar(ctx, msg.Uuid, msg.Link)
+	err = h.repository.UpdateUserAvatar(ctx, msg.Uuid, msg.Link)
 	if err != nil {
 		m.Increment("update_avatar.error")
 		logger.Error(fmt.Sprintf("failed to update avatar: %v", err))

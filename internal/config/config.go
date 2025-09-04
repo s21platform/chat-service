@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -14,6 +15,7 @@ type Config struct {
 	Platform    Platform
 	UserService UserService
 	Kafka       Kafka
+	Centrifuge  Centrifuge
 }
 
 type Service struct {
@@ -53,6 +55,13 @@ type Kafka struct {
 	Port        string `env:"KAFKA_PORT"`
 	UserTopic   string `env:"USER_SET_NEW_NICKNAME"`
 	AvatarTopic string `env:"AVATAR_SET_NEW_USER"`
+}
+
+type Centrifuge struct {
+	BaseURL   string        `env:"CENTRIFUGE_BASE_URL"`
+	APIKey    string        `env:"CENTRIFUGE_API_KEY"`
+	Timeout   time.Duration `env:"CENTRIFUGE_TIMEOUT" env-default:"10s"`
+	JWTSecret string        `env:"CENTRIFUGE_JWT_SECRET"`
 }
 
 func MustLoad() *Config {

@@ -13,11 +13,11 @@ import (
 )
 
 type Handler struct {
-	dbR DBRepo
+	repository DBRepo
 }
 
-func New(dbR DBRepo) *Handler {
-	return &Handler{dbR: dbR}
+func New(repo DBRepo) *Handler {
+	return &Handler{repository: repo}
 }
 
 func convertMessage(bMessage []byte, target interface{}) error {
@@ -42,7 +42,7 @@ func (h *Handler) Handler(ctx context.Context, in []byte) error {
 		return err
 	}
 
-	err = h.dbR.UpdateUserNickname(ctx, msg.UserUuid, msg.Nickname)
+	err = h.repository.UpdateUserNickname(ctx, msg.UserUuid, msg.Nickname)
 	if err != nil {
 		m.Increment("update_nickname.error")
 		logger.Error(fmt.Sprintf("failed to update nickname: %v", err))
